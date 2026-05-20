@@ -1,6 +1,4 @@
 <div align="center">
-  <img width="100%" height="auto" alt="Bloom Budget Header" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" style="border-radius: 24px;" />
-  
   # 🌸 Bloom Budget ✨
   
   **Bloom Budget** is a personalized, highly aesthetic personal finance app designed for anyone who wants to manage their savings in style. Styled with a premium, modern "girly pop" theme, the project offers a gorgeous responsive **TypeScript React Web App** side-by-side with a **Native iOS Flutter Application**.
