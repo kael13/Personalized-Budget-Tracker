@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { X, Trash2, Edit2, Share2, Wallet, ArrowDown, Plus, Info } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recharts";
-import type { BudgetAllocation, Category } from "../types";
+import type { BudgetAllocation, Category, SubCategory } from "../types";
 
 interface DetailSheetProps {
   budget: BudgetAllocation;
@@ -12,7 +12,7 @@ interface DetailSheetProps {
   onUpdate: (updatedBudget: BudgetAllocation) => Promise<void>;
 }
 
-const COLORS = ["#FF8EAD", "#FFC5D3", "#FF85A1", "#FFD1DC", "#FADADD", "#FFB7C5", "#E5B0BC"];
+const COLORS = ["#EC7063", "#FFB6C1", "#F1948A", "#FADADD", "#F5B7B1"];
 
 export default function DetailSheet({ budget, onClose, onEdit, onDelete, onUpdate }: DetailSheetProps) {
   const [localCategories, setLocalCategories] = useState<Category[]>(budget.categories);
@@ -61,9 +61,48 @@ export default function DetailSheet({ budget, onClose, onEdit, onDelete, onUpdat
     setLocalCategories(localCategories.filter(c => c.id !== id));
   };
 
+  const addSubCategory = (categoryId: string) => {
+    const newSub: SubCategory = {
+      id: typeof crypto !== 'undefined' && crypto.randomUUID 
+        ? crypto.randomUUID() 
+        : Math.random().toString(36).substring(2, 15),
+      name: "",
+      allocatedAmount: 0,
+      spentAmount: 0
+    };
+    setLocalCategories(localCategories.map(c => 
+      c.id === categoryId 
+        ? { ...c, subCategories: [...(c.subCategories || []), newSub] } 
+        : c
+    ));
+  };
+
+  const updateSubCategory = (categoryId: string, subId: string, updates: Partial<SubCategory>) => {
+    setLocalCategories(localCategories.map(c => 
+      c.id === categoryId 
+        ? { 
+            ...c, 
+            subCategories: c.subCategories?.map(s => s.id === subId ? { ...s, ...updates } : s) 
+          } 
+        : c
+    ));
+  };
+
+  const removeSubCategory = (categoryId: string, subId: string) => {
+    setLocalCategories(localCategories.map(c => 
+      c.id === categoryId 
+        ? { ...c, subCategories: c.subCategories?.filter(s => s.id !== subId) } 
+        : c
+    ));
+  };
+
   const hasEmptyNames = localCategories.some(cat => !cat.name.trim());
   const hasNegativeAmounts = localCategories.some(cat => cat.allocatedAmount < 0);
   const isOverBudget = totalAllocated > budget.totalBudget;
+  const hasSubcategoryOverAllocation = localCategories.some(cat => {
+    const subTotal = cat.subCategories?.reduce((sum, s) => sum + s.allocatedAmount, 0) || 0;
+    return subTotal > cat.allocatedAmount;
+  });
 
   let validationError = "";
   if (isOverBudget) {
@@ -72,6 +111,8 @@ export default function DetailSheet({ budget, onClose, onEdit, onDelete, onUpdat
     validationError = "Category names cannot be empty! ✨";
   } else if (hasNegativeAmounts) {
     validationError = "Allocated amount cannot be negative! 💖";
+  } else if (hasSubcategoryOverAllocation) {
+    validationError = "Subcategory total exceeds its category allocated amount! 🌸";
   }
 
   const isDirty = JSON.stringify(localCategories) !== JSON.stringify(budget.categories);
@@ -201,62 +242,126 @@ export default function DetailSheet({ budget, onClose, onEdit, onDelete, onUpdat
               </div>
             )}
 
-            <div className="overflow-x-auto rounded-3xl border border-pastel-pink/20 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-800/10">
+            <div className="overflow-x-auto rounded-3xl border border-pastel-salmon/30 dark:border-slate-700 bg-slate-50/30 dark:bg-slate-800/10">
               <table className="w-full border-collapse text-left text-sm">
                 <thead>
-                  <tr className="border-b border-pastel-pink/10 dark:border-slate-700 bg-pastel-pink-light/40 dark:bg-slate-800/40 select-none">
-                    <th scope="col" className="px-4 py-3 text-[10px] font-black text-slate-450 dark:text-slate-400 uppercase tracking-wider">Category</th>
-                    <th scope="col" className="px-4 py-3 text-[10px] font-black text-slate-450 dark:text-slate-400 uppercase tracking-wider text-right w-32">Amount</th>
-                    <th scope="col" className="px-4 py-3 text-[10px] font-black text-slate-450 dark:text-slate-400 uppercase tracking-wider text-center w-14">Action</th>
+                  <tr className="border-b border-pastel-salmon/30 dark:border-slate-700 bg-pastel-pink-light/60 dark:bg-slate-800/40 select-none">
+                    <th scope="col" className="px-4 py-3 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Category</th>
+                    <th scope="col" className="px-4 py-3 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right w-32">Amount</th>
+                    <th scope="col" className="px-4 py-3 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider text-center w-14">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-pastel-pink/10 dark:divide-slate-700">
+                <tbody className="divide-y divide-pastel-salmon/20 dark:divide-slate-700">
                   {localCategories.length === 0 ? (
                     <tr>
-                      <td colSpan={3} className="text-center py-10 text-slate-350 dark:text-slate-550 italic text-sm">
+                      <td colSpan={3} className="text-center py-10 text-slate-400 dark:text-slate-500 italic text-sm">
                         No categories added yet. 🌸
                       </td>
                     </tr>
                   ) : (
-                    localCategories.map((cat) => (
-                      <tr 
-                        key={cat.id} 
-                        className="hover:bg-pastel-pink-light/20 dark:hover:bg-slate-800/10 transition-colors duration-200"
-                      >
-                        <td className="px-2 py-2">
-                          <input
-                            type="text"
-                            placeholder="Category Name 🌸"
-                            className="w-full p-2 bg-transparent outline-none font-bold text-slate-700 dark:text-slate-200 border border-transparent focus:border-pastel-pink/30 focus:bg-white dark:focus:bg-slate-850 rounded-xl transition-all"
-                            value={cat.name}
-                            onChange={e => updateCategory(cat.id, { name: e.target.value })}
-                          />
-                        </td>
-                        <td className="px-2 py-2">
-                          <div className="flex items-center gap-1 bg-transparent px-2 border border-transparent focus-within:border-pastel-pink/30 focus-within:bg-white dark:focus-within:bg-slate-850 rounded-xl transition-all">
-                            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 font-mono select-none">
-                              {budget.currency}
-                            </span>
-                            <input
-                              type="number"
-                              placeholder="0"
-                              className="w-full p-2 bg-transparent outline-none font-black text-right text-pastel-pink-dark font-mono text-xs"
-                              value={cat.allocatedAmount || ""}
-                              onChange={e => updateCategory(cat.id, { allocatedAmount: Number(e.target.value) })}
-                            />
-                          </div>
-                        </td>
-                        <td className="px-2 py-2 text-center">
-                          <button
-                            onClick={() => removeCategory(cat.id)}
-                            className="p-1.5 text-slate-300 dark:text-slate-600 hover:text-red-400 active:scale-90 transition-all cursor-pointer inline-flex items-center justify-center rounded-xl hover:bg-red-50 dark:hover:bg-red-950/15 shrink-0"
-                            title="Remove Category"
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </td>
-                      </tr>
-                    ))
+                    localCategories.map((cat) => {
+                      const subTotal = cat.subCategories?.reduce((sum, s) => sum + s.allocatedAmount, 0) || 0;
+                      const isOver = subTotal > cat.allocatedAmount;
+
+                      return (
+                        <React.Fragment key={cat.id}>
+                          {/* Main Category Row */}
+                          <tr className="bg-white dark:bg-slate-800/20">
+                            <td className="px-2 py-2">
+                              <input
+                                type="text"
+                                placeholder="Category Name 🌸"
+                                className="w-full p-2 bg-transparent outline-none font-black text-slate-700 dark:text-slate-200 border border-transparent focus:border-pastel-coral/50 focus:bg-white dark:focus:bg-slate-800 rounded-xl transition-all"
+                                value={cat.name}
+                                onChange={e => updateCategory(cat.id, { name: e.target.value })}
+                              />
+                            </td>
+                            <td className="px-2 py-2">
+                              <div className="flex items-center gap-1 bg-transparent px-2 border border-transparent focus-within:border-pastel-coral/50 focus-within:bg-white dark:focus-within:bg-slate-800 rounded-xl transition-all">
+                                <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 font-mono select-none">
+                                  {budget.currency}
+                                </span>
+                                <input
+                                  type="number"
+                                  placeholder="0"
+                                  className="w-full p-2 bg-transparent outline-none font-black text-right text-pastel-pink-dark font-mono text-xs"
+                                  value={cat.allocatedAmount || ""}
+                                  onChange={e => updateCategory(cat.id, { allocatedAmount: Number(e.target.value) })}
+                                />
+                              </div>
+                            </td>
+                            <td className="px-2 py-2 text-center">
+                              <button
+                                onClick={() => removeCategory(cat.id)}
+                                className="p-1.5 text-slate-300 dark:text-slate-600 hover:text-red-400 active:scale-90 transition-all cursor-pointer inline-flex items-center justify-center rounded-xl hover:bg-red-50 dark:hover:bg-red-950/15 shrink-0"
+                                title="Remove Category"
+                              >
+                                <Trash2 size={15} />
+                              </button>
+                            </td>
+                          </tr>
+
+                          {/* Subcategory Rows */}
+                          {cat.subCategories?.map((sub) => (
+                            <tr key={sub.id} className="bg-slate-50/45 dark:bg-slate-900/10">
+                              <td className="px-2 py-1.5 pl-8">
+                                <div className="flex items-center gap-2 border-l-2 border-dashed border-pastel-salmon/35 pl-3">
+                                  <input
+                                    type="text"
+                                    placeholder="Subcategory Name ☕"
+                                    className="w-full p-1.5 bg-transparent outline-none font-bold text-xs text-slate-600 dark:text-slate-300 border border-transparent focus:border-pastel-coral/40 focus:bg-white dark:focus:bg-slate-800 rounded-lg transition-all"
+                                    value={sub.name}
+                                    onChange={e => updateSubCategory(cat.id, sub.id, { name: e.target.value })}
+                                  />
+                                </div>
+                              </td>
+                              <td className="px-2 py-1.5">
+                                <div className="flex items-center gap-1 bg-transparent px-2 border border-transparent focus-within:border-pastel-coral/45 focus-within:bg-white dark:focus-within:bg-slate-800 rounded-lg transition-all">
+                                  <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 font-mono select-none">
+                                    {budget.currency}
+                                  </span>
+                                  <input
+                                    type="number"
+                                    placeholder="0"
+                                    className="w-full p-1 bg-transparent outline-none font-black text-right text-pastel-pink-dark font-mono text-[10px]"
+                                    value={sub.allocatedAmount || ""}
+                                    onChange={e => updateSubCategory(cat.id, sub.id, { allocatedAmount: Number(e.target.value) })}
+                                  />
+                                </div>
+                              </td>
+                              <td className="px-2 py-1.5 text-center">
+                                <button
+                                  onClick={() => removeSubCategory(cat.id, sub.id)}
+                                  className="p-1 text-slate-300 dark:text-slate-600 hover:text-red-400 active:scale-90 transition-all cursor-pointer inline-flex items-center justify-center rounded-lg hover:bg-red-50 dark:hover:bg-red-950/15 shrink-0"
+                                  title="Remove Subcategory"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+
+                          {/* Subcategory Action & Summary Row */}
+                          <tr className="bg-slate-50/20 dark:bg-slate-900/5">
+                            <td colSpan={3} className="px-4 py-2 pl-8 border-b border-pastel-salmon/10">
+                              <div className="flex justify-between items-center border-l-2 border-dashed border-pastel-salmon/35 pl-3">
+                                <button
+                                  onClick={() => addSubCategory(cat.id)}
+                                  className="text-[9px] font-black text-pastel-pink-dark hover:text-accent flex items-center gap-1 uppercase tracking-widest cursor-pointer select-none"
+                                >
+                                  <Plus size={11} strokeWidth={3} /> Add Subcategory
+                                </button>
+                                {cat.allocatedAmount > 0 && (
+                                  <span className={`text-[8px] font-black uppercase tracking-tight ${isOver ? "text-red-500 font-bold" : "text-slate-450 dark:text-slate-550"}`}>
+                                    {budget.currency} {subTotal.toLocaleString()} / {cat.allocatedAmount.toLocaleString()} Allocated
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        </React.Fragment>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -264,7 +369,7 @@ export default function DetailSheet({ budget, onClose, onEdit, onDelete, onUpdat
 
             <button
               onClick={addCategory}
-              className="w-full py-4 border-2 border-dashed border-pastel-pink/30 dark:border-pastel-pink/20 rounded-3xl flex items-center justify-center gap-2 text-pastel-pink-dark font-black text-xs uppercase tracking-widest hover:bg-pastel-pink-light dark:hover:bg-slate-800/50 transition-colors cursor-pointer select-none"
+              className="w-full py-4 border-2 border-dashed border-pastel-salmon/40 dark:border-pastel-pink/20 rounded-3xl flex items-center justify-center gap-2 text-pastel-pink-dark font-black text-xs uppercase tracking-widest hover:bg-pastel-pink-light/30 dark:hover:bg-slate-800/50 transition-colors cursor-pointer select-none"
             >
               <Plus size={16} /> Add Category
             </button>

@@ -10,9 +10,8 @@ import NewProfileCard from "./components/NewProfileCard";
 import AIRecommendations from "./components/AIRecommendations";
 import BudgetModal from "./components/BudgetModal";
 import DetailSheet from "./components/DetailSheet";
-import PinLock from "./components/PinLock";
 
-const CHART_COLORS = ["#FF8EAD", "#FFC5D3", "#FF85A1", "#FFD1DC", "#FADADD", "#FFB7C5", "#E5B0BC"];
+const CHART_COLORS = ["#EC7063", "#FFB6C1", "#F1948A", "#FADADD", "#F5B7B1"];
 
 export default function App() {
   const {
@@ -24,15 +23,13 @@ export default function App() {
     setShowNewModal,
     selectedBudget,
     setSelectedBudget,
-    budgetToUnlock,
-    setBudgetToUnlock,
-    setUnlockedBudgets,
     editingBudget,
     setEditingBudget,
     sortBy,
     handleCreateBudget,
     handleUpdateBudget,
     handleDeleteBudget,
+    handleDeleteMultipleBudgets,
     handleBudgetClick,
     toggleDarkMode,
     filteredBudgets,
@@ -55,6 +52,9 @@ export default function App() {
           filteredBudgets={filteredBudgets}
           globalCategoryData={globalCategoryData}
           onBudgetClick={handleBudgetClick}
+          onDeleteBudget={handleDeleteBudget}
+          onDeleteMultipleBudgets={handleDeleteMultipleBudgets}
+          onUpdateBudget={handleUpdateBudget}
           onShowNewModal={() => {
             setEditingBudget(null);
             setShowNewModal(true);
@@ -136,18 +136,6 @@ export default function App() {
             }}
             onDelete={() => handleDeleteBudget(selectedBudget.id)}
             onUpdate={handleUpdateBudget}
-          />
-        )}
-
-        {budgetToUnlock && (
-          <PinLock
-            correctPin={budgetToUnlock.pin!}
-            onSuccess={() => {
-              setUnlockedBudgets((prev) => new Set(prev).add(budgetToUnlock.id));
-              setSelectedBudget(budgetToUnlock);
-              setBudgetToUnlock(null);
-            }}
-            onCancel={() => setBudgetToUnlock(null)}
           />
         )}
       </AnimatePresence>

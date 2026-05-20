@@ -5,11 +5,9 @@ import { db } from "../services/db";
 export function useBudgetTracker() {
   const [budgets, setBudgets] = useState<BudgetAllocation[]>([]);
   const [config, setConfig] = useState<AppConfig>({ darkMode: false });
-  const [activeTab, setActiveTab] = useState<"dashboard" | "analytics">("dashboard");
+  const [activeTab, setActiveTab] = useState<"dashboard" | "analytics" | "calculator">("dashboard");
   const [showNewModal, setShowNewModal] = useState(false);
   const [selectedBudget, setSelectedBudget] = useState<BudgetAllocation | null>(null);
-  const [budgetToUnlock, setBudgetToUnlock] = useState<BudgetAllocation | null>(null);
-  const [unlockedBudgets, setUnlockedBudgets] = useState<Set<string>>(new Set());
   const [editingBudget, setEditingBudget] = useState<BudgetAllocation | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"date" | "amount">("date");
@@ -60,12 +58,19 @@ export function useBudgetTracker() {
     }
   };
 
-  const handleBudgetClick = (budget: BudgetAllocation) => {
-    if (budget.pin && !unlockedBudgets.has(budget.id)) {
-      setBudgetToUnlock(budget);
-    } else {
-      setSelectedBudget(budget);
+  const handleDeleteMultipleBudgets = async (ids: string[]) => {
+    if (window.confirm(`Are you sure you want to delete the selected ${ids.length} budget profiles? ✨`)) {
+      for (const id of ids) {
+        await db.deleteBudget(id);
+      }
+      const updated = await db.getBudgets();
+      setBudgets(updated);
+      setSelectedBudget(null);
     }
+  };
+
+  const handleBudgetClick = (budget: BudgetAllocation) => {
+    setSelectedBudget(budget);
   };
 
   const toggleDarkMode = () => {
@@ -90,6 +95,12 @@ export function useBudgetTracker() {
   const filteredBudgets = budgets
     .filter((b) => b.name.toLowerCase().includes(searchQuery.toLowerCase()))
     .sort((a, b) => {
+      // Pin to top first!
+      const aPinned = !!a.pin;
+      const bPinned = !!b.pin;
+      if (aPinned && !bPinned) return -1;
+      if (!aPinned && bPinned) return 1;
+
       if (sortBy === "date") return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       return b.totalBudget - a.totalBudget;
     });
@@ -107,10 +118,6 @@ export function useBudgetTracker() {
     setShowNewModal,
     selectedBudget,
     setSelectedBudget,
-    budgetToUnlock,
-    setBudgetToUnlock,
-    unlockedBudgets,
-    setUnlockedBudgets,
     editingBudget,
     setEditingBudget,
     searchQuery,
@@ -120,6 +127,7 @@ export function useBudgetTracker() {
     handleCreateBudget,
     handleUpdateBudget,
     handleDeleteBudget,
+    handleDeleteMultipleBudgets,
     handleBudgetClick,
     toggleDarkMode,
     filteredBudgets,

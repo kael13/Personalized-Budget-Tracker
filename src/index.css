@@ -1,16 +1,28 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
-  --color-pastel-pink: #FFC5D3;
-  --color-pastel-pink-light: #FFF0F3;
-  --color-pastel-pink-dark: #FF8EAD;
-  --color-accent: #FF85A1;
+  --color-pastel-pink: #FFB6C1;
+  --color-pastel-pink-light: #FADADD;
+  --color-pastel-pink-dark: var(--pastel-pink-dark-dynamic);
+  --color-pastel-salmon: #F5B7B1;
+  --color-pastel-coral: #F1948A;
+  --color-accent: #EC7063;
   --color-background-soft: #FFF8FA;
   --color-text-dark: #4A4A4A;
   
   --font-sans: "Outfit", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  --pastel-pink-dark-dynamic: #EC7063; /* High contrast coral/red for light mode text and highlights */
+}
+
+.dark {
+  --pastel-pink-dark-dynamic: #FFB6C1; /* Lighter soft pink for dark mode readability and glow */
 }
 
 @layer base {
@@ -60,7 +72,7 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #FFC5D3;
+  background: var(--color-pastel-pink);
   border-radius: 10px;
 }
 

@@ -81,6 +81,48 @@ export default function BudgetModal({ onClose, onSave, initialData }: BudgetModa
     });
   };
 
+  const addSubCategory = (categoryId: string) => {
+    const newSub: SubCategory = {
+      id: db.generateId(),
+      name: "",
+      allocatedAmount: 0,
+      spentAmount: 0
+    };
+    setFormData({
+      ...formData,
+      categories: formData.categories?.map(c => 
+        c.id === categoryId 
+          ? { ...c, subCategories: [...(c.subCategories || []), newSub] } 
+          : c
+      )
+    });
+  };
+
+  const updateSubCategory = (categoryId: string, subId: string, updates: Partial<SubCategory>) => {
+    setFormData({
+      ...formData,
+      categories: formData.categories?.map(c => 
+        c.id === categoryId 
+          ? { 
+              ...c, 
+              subCategories: c.subCategories?.map(s => s.id === subId ? { ...s, ...updates } : s) 
+            } 
+          : c
+      )
+    });
+  };
+
+  const removeSubCategory = (categoryId: string, subId: string) => {
+    setFormData({
+      ...formData,
+      categories: formData.categories?.map(c => 
+        c.id === categoryId 
+          ? { ...c, subCategories: c.subCategories?.filter(s => s.id !== subId) } 
+          : c
+      )
+    });
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/40 backdrop-blur-sm">
       <motion.div
@@ -170,30 +212,81 @@ export default function BudgetModal({ onClose, onSave, initialData }: BudgetModa
                 </p>
               </div>
 
-              <div className="space-y-3">
-                {formData.categories?.map((cat) => (
-                    <div key={cat.id} className="p-4 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-pastel-pink/20 space-y-3 relative group transition-colors">
-                    <div className="flex gap-4">
+              <div className="space-y-4">
+                {formData.categories?.map((cat) => {
+                  const subTotal = cat.subCategories?.reduce((sum, s) => sum + s.allocatedAmount, 0) || 0;
+                  const isOver = subTotal > cat.allocatedAmount;
+
+                  return (
+                    <div key={cat.id} className="p-4 rounded-3xl bg-slate-50 dark:bg-slate-800/50 border border-pastel-salmon/30 space-y-3 relative transition-colors shadow-sm">
+                      <div className="flex gap-4 items-center">
                         <input
-                        type="text"
-                        placeholder="Category Name"
-                        className="flex-1 p-2 bg-transparent outline-none text-sm font-black text-slate-800 dark:text-white border-b-2 border-pastel-pink/10 focus:border-pastel-pink"
-                        value={cat.name}
-                        onChange={e => updateCategory(cat.id, { name: e.target.value })}
+                          type="text"
+                          placeholder="Category Name"
+                          className="flex-1 p-2 bg-transparent outline-none text-sm font-black text-slate-800 dark:text-white border-b border-pastel-pink/10 focus:border-pastel-coral/50"
+                          value={cat.name}
+                          onChange={e => updateCategory(cat.id, { name: e.target.value })}
                         />
-                        <input
-                        type="number"
-                        placeholder="Amount"
-                        className="w-24 p-2 bg-transparent outline-none text-sm font-black text-right text-pastel-pink-dark border-b-2 border-pastel-pink/10 focus:border-pastel-pink font-mono"
-                        value={cat.allocatedAmount || ""}
-                        onChange={e => updateCategory(cat.id, { allocatedAmount: Number(e.target.value) })}
-                        />
-                        <button onClick={() => removeCategory(cat.id)} className="text-slate-300 dark:text-slate-600 hover:text-red-400 transition-colors">
-                        <Trash2 size={18} />
+                        <div className="flex items-center gap-1 bg-transparent px-2 border-b border-pastel-pink/10 focus-within:border-pastel-coral/50 font-mono text-sm font-black">
+                          <span className="text-[10px] text-slate-400 select-none">{formData.currency}</span>
+                          <input
+                            type="number"
+                            placeholder="Amount"
+                            className="w-24 p-2 bg-transparent outline-none text-right text-pastel-pink-dark font-black font-mono text-xs"
+                            value={cat.allocatedAmount || ""}
+                            onChange={e => updateCategory(cat.id, { allocatedAmount: Number(e.target.value) })}
+                          />
+                        </div>
+                        <button onClick={() => removeCategory(cat.id)} className="text-slate-300 dark:text-slate-600 hover:text-red-400 transition-colors cursor-pointer p-1">
+                          <Trash2 size={16} />
                         </button>
+                      </div>
+
+                      {/* Subcategories list */}
+                      <div className="pl-6 border-l-2 border-dashed border-pastel-salmon/30 space-y-2">
+                        {cat.subCategories?.map((sub) => (
+                          <div key={sub.id} className="flex gap-3 items-center">
+                            <input
+                              type="text"
+                              placeholder="Subcategory (e.g. Coffee ☕)"
+                              className="flex-1 p-1.5 bg-transparent outline-none text-xs font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-100 dark:border-slate-800 focus:border-pastel-coral/40"
+                              value={sub.name}
+                              onChange={e => updateSubCategory(cat.id, sub.id, { name: e.target.value })}
+                            />
+                            <div className="flex items-center gap-1 bg-transparent px-1 border-b border-slate-100 dark:border-slate-800 focus-within:border-pastel-coral/40 font-mono text-xs font-semibold">
+                              <span className="text-[8px] text-slate-400">{formData.currency}</span>
+                              <input
+                                type="number"
+                                placeholder="0"
+                                className="w-16 p-1 bg-transparent outline-none text-right text-pastel-pink-dark font-bold font-mono text-[10px]"
+                                value={sub.allocatedAmount || ""}
+                                onChange={e => updateSubCategory(cat.id, sub.id, { allocatedAmount: Number(e.target.value) })}
+                              />
+                            </div>
+                            <button onClick={() => removeSubCategory(cat.id, sub.id)} className="text-slate-300 dark:text-slate-600 hover:text-red-400 transition-colors cursor-pointer p-1">
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        ))}
+
+                        {/* Add Subcategory Trigger */}
+                        <div className="flex justify-between items-center pt-1">
+                          <button
+                            onClick={() => addSubCategory(cat.id)}
+                            className="text-[9px] font-black text-pastel-pink-dark hover:text-accent flex items-center gap-1 uppercase tracking-widest cursor-pointer select-none"
+                          >
+                            <Plus size={11} strokeWidth={3} /> Add Subcategory
+                          </button>
+                          {cat.allocatedAmount > 0 && (
+                            <span className={`text-[8px] font-black uppercase tracking-tight ${isOver ? "text-red-500 font-bold" : "text-slate-400"}`}>
+                              {formData.currency} {subTotal.toLocaleString()} / {cat.allocatedAmount.toLocaleString()} Allocated
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    </div>
-                ))}
+                  );
+                })}
               </div>
 
               <button

@@ -1,5 +1,5 @@
-import React from "react";
-import { Sun, Moon, Plus, Layers, Sparkles, Shield } from "lucide-react";
+import React, { useState } from "react";
+import { Sun, Moon, Plus, Layers, Sparkles, Shield, Calculator as CalculatorIcon, Edit2 } from "lucide-react";
 import { 
   PieChart, 
   Pie, 
@@ -10,6 +10,7 @@ import {
 import type { BudgetAllocation } from "../types";
 import BudgetCard from "./BudgetCard";
 import AIRecommendations from "./AIRecommendations";
+import Calculator from "./Calculator";
 
 interface CategoryData {
   name: string;
@@ -17,12 +18,15 @@ interface CategoryData {
 }
 
 interface MobileDashboardProps {
-  activeTab: "dashboard" | "analytics";
-  setActiveTab: (tab: "dashboard" | "analytics") => void;
+  activeTab: "dashboard" | "analytics" | "calculator";
+  setActiveTab: (tab: "dashboard" | "analytics" | "calculator") => void;
   budgets: BudgetAllocation[];
   filteredBudgets: BudgetAllocation[];
   globalCategoryData: CategoryData[];
   onBudgetClick: (budget: BudgetAllocation) => void;
+  onDeleteBudget: (id: string) => Promise<void>;
+  onDeleteMultipleBudgets: (ids: string[]) => Promise<void>;
+  onUpdateBudget: (budget: BudgetAllocation) => Promise<void>;
   onShowNewModal: () => void;
   toggleDarkMode: () => void;
   darkMode: boolean;
@@ -36,11 +40,58 @@ export default function MobileDashboard({
   filteredBudgets,
   globalCategoryData,
   onBudgetClick,
+  onDeleteBudget,
+  onDeleteMultipleBudgets,
+  onUpdateBudget,
   onShowNewModal,
   toggleDarkMode,
   darkMode,
   chartColors,
 }: MobileDashboardProps) {
+  const [selectedBudgetIds, setSelectedBudgetIds] = useState<string[]>([]);
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  const toggleSelectBudget = (id: string) => {
+    if (selectedBudgetIds.includes(id)) {
+      setSelectedBudgetIds(selectedBudgetIds.filter(x => x !== id));
+    } else {
+      setSelectedBudgetIds([...selectedBudgetIds, id]);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedBudgetIds.length === 0) return;
+    await onDeleteMultipleBudgets(selectedBudgetIds);
+    setSelectedBudgetIds([]);
+    setIsEditMode(false);
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedBudgetIds.length === filteredBudgets.length) {
+      setSelectedBudgetIds([]);
+    } else {
+      setSelectedBudgetIds(filteredBudgets.map(b => b.id));
+    }
+  };
+
+  const handleBulkPinToggle = async () => {
+    if (selectedBudgetIds.length === 0) return;
+    
+    // Check if at least one selected budget is not pinned
+    const anyUnpinned = budgets.some(b => selectedBudgetIds.includes(b.id) && !b.pin);
+    const newPinState = anyUnpinned ? "true" : null;
+    
+    // Update all selected plans
+    for (const budget of budgets) {
+      if (selectedBudgetIds.includes(budget.id)) {
+        const updated = { ...budget, pin: newPinState };
+        await onUpdateBudget(updated);
+      }
+    }
+    alert(`Successfully ${anyUnpinned ? "pinned" : "unpinned"} ${selectedBudgetIds.length} budget plans! 📌`);
+    setSelectedBudgetIds([]);
+    setIsEditMode(false);
+  };
   return (
     <section className="flex xl:w-[400px] w-full shrink-0 items-center justify-center relative">
       <div className="iphone-xs-container bg-white dark:bg-slate-900 flex flex-col shadow-2xl relative transition-colors duration-300">
@@ -57,7 +108,7 @@ export default function MobileDashboard({
                 {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric" })}
               </span>
               <h2 className="text-2xl font-black text-slate-800 dark:text-white">
-                {activeTab === "dashboard" ? "My Budgets" : "Spending Stats"}
+                {activeTab === "dashboard" ? "My Budgets" : activeTab === "analytics" ? "Spending Stats" : "Royal Calculator"}
               </h2>
             </div>
             <div className="flex gap-2">
@@ -68,12 +119,28 @@ export default function MobileDashboard({
                 {darkMode ? <Sun size={20} /> : <Moon size={20} />}
               </button>
               {activeTab === "dashboard" && (
-                <button 
-                  onClick={onShowNewModal}
-                  className="w-12 h-12 bg-pastel-pink text-white rounded-2xl flex items-center justify-center shadow-lg shadow-pastel-pink/20 active:scale-90 transition-transform cursor-pointer"
-                >
-                  <Plus size={24} strokeWidth={3} />
-                </button>
+                <>
+                  <button 
+                    onClick={() => {
+                      setIsEditMode(!isEditMode);
+                      if (isEditMode) setSelectedBudgetIds([]); // Clear selection when exiting edit mode
+                    }}
+                    className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg active:scale-90 transition-transform cursor-pointer border ${
+                      isEditMode
+                        ? "bg-pastel-pink text-white border-pastel-pink shadow-pastel-pink/20"
+                        : "bg-white dark:bg-slate-800 text-pastel-pink border-pastel-pink/10 shadow-black/5"
+                    }`}
+                    title="Edit/Bulk Actions"
+                  >
+                    <Edit2 size={18} strokeWidth={2.5} />
+                  </button>
+                  <button 
+                    onClick={onShowNewModal}
+                    className="w-12 h-12 bg-pastel-pink text-white rounded-2xl flex items-center justify-center shadow-lg shadow-pastel-pink/20 active:scale-90 transition-transform cursor-pointer"
+                  >
+                    <Plus size={24} strokeWidth={3} />
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -88,15 +155,54 @@ export default function MobileDashboard({
                   <p className="text-xs font-bold text-slate-400 px-8">No sparkle plans yet! Start your journey. ✨</p>
                 </div>
               ) : (
-                filteredBudgets.map((budget) => (
-                  <BudgetCard
-                    key={budget.id}
-                    allocation={budget}
-                    onClick={() => onBudgetClick(budget)}
-                  />
-                ))
+                <div className="space-y-4">
+                  {/* Bulk Actions Header Bar */}
+                  {isEditMode && (
+                    <div className="flex flex-col gap-2 bg-[#FFF8FA] dark:bg-slate-800/80 p-3.5 rounded-[24px] border border-pastel-pink/15 shadow-sm transition-all duration-300">
+                      <div className="flex justify-between items-center">
+                        <button
+                          onClick={toggleSelectAll}
+                          className="text-[10px] font-black text-pastel-pink-dark hover:underline flex items-center gap-1.5 uppercase tracking-widest cursor-pointer select-none"
+                        >
+                          {selectedBudgetIds.length === filteredBudgets.length ? "Deselect All 🌸" : "Select All 🎀"}
+                        </button>
+                        <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider font-mono">
+                          {selectedBudgetIds.length} Selected
+                        </span>
+                      </div>
+                      
+                      {selectedBudgetIds.length > 0 && (
+                        <div className="flex gap-2 pt-2 border-t border-dashed border-pastel-pink/15">
+                          <button
+                            onClick={handleBulkPinToggle}
+                            className="flex-1 py-2 bg-white dark:bg-slate-700 text-pastel-pink-dark border border-pastel-pink/20 hover:bg-pastel-pink-light/35 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-1 cursor-pointer select-none shadow-sm"
+                          >
+                            Pin/Unpin 📌
+                          </button>
+                          <button
+                            onClick={handleBulkDelete}
+                            className="flex-1 py-2 bg-red-50 dark:bg-red-950/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/30 rounded-xl text-[9px] font-black uppercase tracking-widest flex items-center justify-center gap-1 cursor-pointer select-none"
+                          >
+                            Remove Selected 🗑️
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {filteredBudgets.map((budget) => (
+                    <BudgetCard
+                      key={budget.id}
+                      allocation={budget}
+                      onClick={() => onBudgetClick(budget)}
+                      isSelected={isEditMode && selectedBudgetIds.includes(budget.id)}
+                      onToggleSelect={isEditMode ? () => toggleSelectBudget(budget.id) : undefined}
+                      onDelete={isEditMode ? () => onDeleteBudget(budget.id) : undefined}
+                    />
+                  ))}
+                </div>
               )
-            ) : (
+            ) : activeTab === "analytics" ? (
               <div className="space-y-6 pt-4">
                 <div className="bg-pastel-pink-light/50 dark:bg-slate-800/50 p-6 rounded-[32px] border border-pastel-pink/20 dark:border-pastel-pink/5">
                   <h4 className="text-[10px] font-black text-pastel-pink-dark uppercase tracking-widest mb-4">Allocation Summary</h4>
@@ -144,6 +250,10 @@ export default function MobileDashboard({
                   <AIRecommendations budgets={budgets} />
                 </div>
               </div>
+            ) : (
+              <div className="pt-2 h-full">
+                <Calculator />
+              </div>
             )}
           </div>
 
@@ -167,12 +277,15 @@ export default function MobileDashboard({
               </div>
               <span className="text-[8px] font-black uppercase tracking-widest">Stats</span>
             </button>
-            <div className="flex flex-col items-center gap-1.5 text-slate-300 dark:text-slate-600">
-              <div className="p-2">
-                <Shield size={22} />
+            <button 
+              onClick={() => setActiveTab("calculator")} 
+              className={`flex flex-col items-center gap-1.5 transition-all duration-300 cursor-pointer ${activeTab === "calculator" ? "text-pastel-pink scale-110" : "text-slate-300 dark:text-slate-600"}`}
+            >
+              <div className={`p-2 rounded-xl ${activeTab === "calculator" ? "bg-pastel-pink-light dark:bg-pastel-pink/10" : ""}`}>
+                <CalculatorIcon size={22} />
               </div>
-              <span className="text-[8px] font-black uppercase tracking-widest">Vault</span>
-            </div>
+              <span className="text-[8px] font-black uppercase tracking-widest">Calc</span>
+            </button>
           </div>
         </div>
       </div>
