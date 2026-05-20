@@ -1,146 +1,158 @@
-<div align="center">
-  # 🌸 Bloom Budget ✨
-  
-  **Bloom Budget** is a personalized, highly aesthetic personal finance app designed for anyone who wants to manage their savings in style. Styled with a premium, modern "girly pop" theme, the project offers a gorgeous responsive **TypeScript React Web App** side-by-side with a **Native iOS Flutter Application**.
-  
-  With intelligent **Google Gemini AI spending analysis** and a secure **6-digit Privacy Vault**, managing money has never been this fun, supportive, and chic! 🎀
-</div>
+# 🌸 Budgetarian
+
+> **A beautifully crafted, pastel-themed personal budget tracker built with Flutter.**
+> Designed to feel premium, intuitive, and delightful — because managing your money should spark joy, not stress.
 
 ---
 
-## 🌟 Key Features
+## ✨ Features
 
-*   🌸 **Vibrant "Girly Pop" UI Design**: Curated, warm pastel palettes, rounded premium curves, and micro-animations that deliver an immersive, delightful user experience. Full support for **Light** and **Dark** modes.
-*   🧠 **Gemini AI Royal Financial Advisor**: A built-in generative AI interface powered by the `gemini-3-flash-preview` model that analyzes active budgets and dispenses three supportive, helpful, and fun money-saving tips!
-*   🔒 **Royal Privacy Vault**: Lock sensitive or private budget profiles with a 6-digit numeric keypad screen (`PinLock`), keeping your financial data secure from prying eyes.
-*   📊 **Double-Pane Live Simulation**: A gorgeous desktop layout containing a fully interactive, responsive **iPhone notch simulator frame** alongside massive **Recharts desktop breakdowns** and top category summaries.
-*   📱 **Native iOS App (Flutter)**: A robust, native implementation featuring true local **SQLite database persistence** (`sqflite`), Material 3 styling, and fluid motion transitions (`flutter_animate`).
+### 💰 Budget Management
+- **Create Budget Profiles** — A guided 3-step wizard walks you through naming your budget, setting a total amount, choosing your currency, and defining the consumption timeline.
+- **Category & Subcategory Allocations** — Granularly distribute your total budget across custom categories (e.g., Food, Transport, Savings), each with their own nested subcategories.
+- **Real-time Validation** — The wizard dynamically tracks remaining unallocated funds as you distribute, preventing over-allocation.
+
+### 🔐 PIN Security
+- **Optional PIN Lock** — Protect sensitive budget profiles with a numeric PIN code set during creation.
+- **Custom Keypad UI** — A beautifully designed numerical keypad with pastel aesthetics for PIN entry.
+
+### 📊 Visual Analytics
+- **Donut Charts** — Interactive `fl_chart` pie/donut visualizations showing category-level breakdowns for each budget.
+- **Global Statistics** — Aggregate insights across all budgets: weekly, monthly, quarterly, and yearly summaries.
+- **Top Categories Breakdown** — See which spending categories dominate across your entire portfolio.
+
+### 🤖 AI Recommendations
+- **Smart Insights Engine** — Analyzes your budget distributions and generates tailored advice:
+  - Warns if Food allocations exceed 35% of total budget.
+  - Nudges you if Savings fall below 15%.
+  - Flags short-timeline budgets that may deplete too quickly.
+- **Refresh on Demand** — Tap to regenerate fresh insights with a simulated processing animation.
+
+### 🧮 Calculator Tools
+- **Standard Calculator** — Full arithmetic expression parser supporting MDAS (Multiply, Divide, Add, Subtract) order of operations.
+- **Royal Ratio Splitter** — Preset budget allocation ratios for quick planning:
+  - `50/30/20` — Needs / Wants / Savings
+  - `70/20/10` — Essentials / Lifestyle / Savings
+  - `80/20` — Living / Savings
+
+### 🎨 Design & UX
+- **Pastel Pink Aesthetic** — A cohesive, premium color palette built around soft pinks, corals, and slate tones.
+- **Dark Mode** — Full dark theme with carefully tuned slate backgrounds and soft pink accents.
+- **Micro-Animations** — Smooth transitions, animated progress bars, and responsive touch feedback powered by `flutter_animate`.
+- **Google Fonts** — Typography uses `Outfit` for UI text and `JetBrains Mono` for numerical displays.
+
+### 🗂️ Bulk Operations
+- **Multi-Select Mode** — Toggle edit mode to select multiple budget cards for batch deletion.
+- **Search & Sort** — Filter budgets by name with real-time search, and toggle sort order between date and amount.
 
 ---
 
-## 🏗️ Project Architecture & Tech Stack
+## 🏗️ Architecture
 
-Bloom Budget is engineered with a modular, decoupling strategy for ultimate maintainability:
-
-### 🌐 Web Application (React & Express Node.js)
-*   **Frontend**: React 19, TypeScript, Tailwind CSS v4, Motion (fluid animations), Recharts (category visualization), Lucide React (premium icons).
-*   **Backend Server**: Express API proxy (`server.ts`) hosting the `@google/genai` interface.
-*   **Data Strategy**: Persisted via standard, lightning-fast Web LocalStorage (`src/services/db.ts`) simulating the SQLite database schema.
-*   **Component Strategy**: Decoupled UI components orchestrating with a custom hook state manager:
-    *   `src/hooks/useBudgetTracker.ts`: Core state machine handling CRUD, filtering, sorting, and aggregate analytics.
-    *   `src/components/Header.tsx`: Responsive navigation header.
-    *   `src/components/MobileDashboard.tsx`: Simulated notched iPhone mockup frame.
-    *   `src/components/OverviewStats.tsx`: Total monthly budget, active profiles, and countdown meters.
-    *   `src/components/GlobalAnalytics.tsx`: Interactive Recharts Category Breakdown.
-    *   `src/components/NewProfileCard.tsx`: Quick select budget profiles and creation portal.
-
-### 📱 Native Mobile Application (Flutter)
-*   **Language & SDK**: Dart / Flutter SDK (optimized for iOS).
-*   **Persistence**: SQLite database integration via the `sqflite` plugin for robust local storage.
-*   **Animation & UI**: Material 3 pastel styling (`GoogleFonts.outfitTextTheme`) and `flutter_animate` transitions.
+```
+lib/
+├── main.dart                          # App entry point & Material theme config
+├── theme/
+│   └── app_colors.dart                # Centralized color palette (light + dark)
+├── models/
+│   └── budget_models.dart             # Data classes: BudgetAllocation, Category, SubCategory
+├── services/
+│   └── database_helper.dart           # SQLite database (sqflite) with FK cascades
+├── providers/
+│   └── app_state.dart                 # Global state management via ChangeNotifier
+├── screens/
+│   ├── home_screen.dart               # Main dashboard with tab navigation
+│   ├── analytics_screen.dart          # Global stats, charts, and AI insights
+│   └── calculator_screen.dart         # Standard calc + ratio split tools
+├── dialogs/
+│   ├── budget_modal.dart              # 3-step budget creation wizard
+│   ├── detail_sheet.dart              # Bottom sheet with category editor & donut chart
+│   └── pin_lock_dialog.dart           # PIN verification keypad
+└── widgets/
+    ├── budget_card_widget.dart         # Individual budget card with progress bar
+    └── ai_recommendations.dart        # Smart insights analysis widget
+```
 
 ---
 
-## 🚀 How to Run the Web App Locally
+## 💾 Database Design
+
+Budgetarian uses **SQLite** via `sqflite` for robust, offline-first data persistence with a normalized relational schema:
+
+| Table | Description | Foreign Key |
+|-------|-------------|-------------|
+| `budgets` | Top-level budget profiles (name, total, currency, pin, days) | — |
+| `categories` | Budget categories with allocated/spent amounts | `budget_id` → `budgets.id` |
+| `sub_categories` | Granular subcategory breakdowns | `category_id` → `categories.id` |
+
+- **Foreign Key Cascading**: `ON DELETE CASCADE` ensures deleting a budget automatically removes all associated categories and subcategories.
+- **Transaction-Based Saves**: All nested writes use `db.transaction()` for atomic, rollback-safe operations.
+
+---
+
+## 📦 Dependencies
+
+| Package | Purpose |
+|---------|---------|
+| `provider` | Reactive state management |
+| `sqflite` | Local SQLite database |
+| `fl_chart` | Donut/pie chart visualizations |
+| `google_fonts` | Outfit & JetBrains Mono typography |
+| `flutter_animate` | Smooth micro-animations |
+| `intl` | Date/number formatting |
+| `shared_preferences` | Lightweight key-value settings |
+| `google_generative_ai` | Gemini AI integration (future) |
+
+---
+
+## 🚀 Getting Started
 
 ### Prerequisites
-*   [Node.js](https://nodejs.org/) (v18 or higher recommended)
+- [Flutter SDK](https://docs.flutter.dev/get-started/install) (3.0+)
+- Xcode (for iOS builds)
+- iOS Simulator or physical device
 
-### Step 1: Install Dependencies
-From the project root directory, run:
+### Installation
+
 ```bash
-npm install
-```
+# Clone the repository
+git clone https://github.com/your-username/Personalized-Budget-Tracker.git
 
-### Step 2: Configure Environment Variables
-1. Create a copy of `.env.example` and name it `.env` (or `.env.local`):
-   ```bash
-   cp .env.example .env
-   ```
-2. Open the file and replace `"MY_GEMINI_API_KEY"` with your active Gemini API key:
-   ```env
-   GEMINI_API_KEY="AIzaSyYourKeyHere..."
-   ```
+# Navigate to the Flutter project
+cd Personalized-Budget-Tracker/flutter
 
-### Step 3: Run the Server
-Launch the development server:
-```bash
-npm run dev
-```
-Open **[http://localhost:3000](http://localhost:3000)** in your browser to view the app!
+# Install dependencies
+flutter pub get
 
----
+# Run on iOS Simulator
+flutter run
 
-## 📱 How to Simulate on an iOS Phone
-
-### 1. Previewing the Web App on Your Physical iPhone
-The development server is pre-configured to bind to `0.0.0.0`, enabling you to access the web app from any device on your Wi-Fi network:
-1. Find your Mac's local IP address:
-   ```bash
-   ipconfig getifaddr en0
-   ```
-2. Open **Safari** on your iPhone (ensure it's connected to the same Wi-Fi network).
-3. Navigate to `http://<your-mac-ip>:3000` (e.g. `http://192.168.1.15:3000`).
-4. *Tip*: Tap **Share** > **Add to Home Screen** in Safari to test it as a standalone, native-feeling Web App!
-
-### 2. Running the Native iOS App (Xcode Simulator)
-1. Navigate to the mobile source directory:
-   ```bash
-   cd flutter
-   ```
-2. Install package dependencies:
-   ```bash
-   flutter pub get
-   ```
-3. Open the Apple iOS Simulator:
-   ```bash
-   open -a Simulator
-   ```
-4. Compile and launch the native code:
-   ```bash
-   flutter run
-   ```
-
----
-
-## 🛡️ Database Schema Reference (SQLite / iOS)
-
-If you modify or expand the models, refer to the established three-table design:
-
-```sql
--- Table: budgets
-CREATE TABLE budgets (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  total_budget REAL NOT NULL,
-  currency TEXT NOT NULL,
-  days_to_consume INTEGER NOT NULL,
-  created_at TEXT NOT NULL,
-  pin TEXT
-);
-
--- Table: categories
-CREATE TABLE categories (
-  id TEXT PRIMARY KEY,
-  budget_id TEXT NOT NULL,
-  name TEXT NOT NULL,
-  allocated_amount REAL NOT NULL,
-  spent_amount REAL NOT NULL,
-  FOREIGN KEY (budget_id) REFERENCES budgets (id) ON DELETE CASCADE
-);
-
--- Table: sub_categories
-CREATE TABLE sub_categories (
-  id TEXT PRIMARY KEY,
-  category_id TEXT NOT NULL,
-  name TEXT NOT NULL,
-  allocated_amount REAL NOT NULL,
-  spent_amount REAL NOT NULL,
-  FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE
-);
+# Build for iOS device (without codesigning)
+flutter build ios --no-codesign
 ```
 
 ---
-<div align="center">
-  *Made with 💖 and a touch of sparkle. Keep glowing and growing your savings! ✨*
-</div>
+
+## 🎯 Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Framework** | Flutter (Dart) |
+| **State Management** | Provider (ChangeNotifier) |
+| **Database** | SQLite via sqflite |
+| **Charts** | fl_chart |
+| **Typography** | Google Fonts (Outfit, JetBrains Mono) |
+| **Animations** | flutter_animate |
+| **Platform** | iOS (primary), Android (compatible) |
+
+---
+
+## 📄 License
+
+This project is part of a personal portfolio. All rights reserved.
+
+---
+
+<p align="center">
+  <i>Built with 💖 and Flutter</i>
+</p>
