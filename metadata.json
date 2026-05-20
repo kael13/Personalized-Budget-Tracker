@@ -1,0 +1,8 @@
+{
+  "name": "BloomBudget",
+  "description": "A stylish pastel pink budget tracker with AI insights, visual category summaries, and PIN security.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
