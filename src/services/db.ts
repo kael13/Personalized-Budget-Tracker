@@ -48,13 +48,13 @@ export const db = {
   saveBudget: async (budget: BudgetAllocation): Promise<void> => {
     const budgets = await db.getBudgets();
     const index = budgets.findIndex((b) => b.id === budget.id);
-    
+
     if (index !== -1) {
       budgets[index] = budget;
     } else {
       budgets.unshift(budget);
     }
-    
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify(budgets));
   },
 
@@ -65,8 +65,8 @@ export const db = {
   },
 
   generateId: () => {
-    return typeof crypto !== 'undefined' && crypto.randomUUID 
-      ? crypto.randomUUID() 
+    return typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
       : Math.random().toString(36).substring(2, 15);
   }
 };

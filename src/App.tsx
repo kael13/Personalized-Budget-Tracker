@@ -31,6 +31,7 @@ export default function App() {
     setEditingBudget,
     sortBy,
     handleCreateBudget,
+    handleUpdateBudget,
     handleDeleteBudget,
     handleBudgetClick,
     toggleDarkMode,
@@ -134,6 +135,7 @@ export default function App() {
               setShowNewModal(true);
             }}
             onDelete={() => handleDeleteBudget(selectedBudget.id)}
+            onUpdate={handleUpdateBudget}
           />
         )}
 

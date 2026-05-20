@@ -41,6 +41,16 @@ export function useBudgetTracker() {
     setEditingBudget(null);
   };
 
+  const handleUpdateBudget = async (budget: BudgetAllocation) => {
+    await db.saveBudget(budget);
+    const updated = await db.getBudgets();
+    setBudgets(updated);
+    if (selectedBudget?.id === budget.id) {
+      setSelectedBudget(budget);
+    }
+  };
+
+
   const handleDeleteBudget = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this budget profile? ✨")) {
       await db.deleteBudget(id);
@@ -108,6 +118,7 @@ export function useBudgetTracker() {
     sortBy,
     setSortBy,
     handleCreateBudget,
+    handleUpdateBudget,
     handleDeleteBudget,
     handleBudgetClick,
     toggleDarkMode,
