@@ -12,6 +12,11 @@ import BudgetCard from "./BudgetCard";
 import AIRecommendations from "./AIRecommendations";
 import Calculator from "./Calculator";
 
+interface PeriodStat {
+  amount: number;
+  count: number;
+}
+
 interface CategoryData {
   name: string;
   value: number;
@@ -31,6 +36,12 @@ interface MobileDashboardProps {
   toggleDarkMode: () => void;
   darkMode: boolean;
   chartColors: string[];
+  periodStats: {
+    weekly: PeriodStat;
+    monthly: PeriodStat;
+    quarterly: PeriodStat;
+    yearly: PeriodStat;
+  };
 }
 
 export default function MobileDashboard({
@@ -47,6 +58,7 @@ export default function MobileDashboard({
   toggleDarkMode,
   darkMode,
   chartColors,
+  periodStats,
 }: MobileDashboardProps) {
   const [selectedBudgetIds, setSelectedBudgetIds] = useState<string[]>([]);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -231,6 +243,56 @@ export default function MobileDashboard({
                         </PieChart>
                       </ResponsiveContainer>
                     )}
+                  </div>
+                </div>
+
+                {/* Period Summaries 2x2 Grid */}
+                <div className="space-y-3">
+                  <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2">Period Summaries</h4>
+                  <div className="grid grid-cols-2 gap-3.5">
+                    {/* Weekly */}
+                    <div className="p-4 rounded-[28px] bg-gradient-to-br from-pastel-pink/15 to-pastel-pink/2 dark:from-pastel-pink/10 dark:to-transparent border border-pastel-pink/20 dark:border-pastel-pink/5 flex flex-col justify-between min-h-[110px] transition-all duration-300 active:scale-95 shadow-sm">
+                      <div>
+                        <span className="text-[9px] font-black text-pastel-pink-dark dark:text-pastel-pink uppercase tracking-widest">Weekly</span>
+                        <p className="text-[8px] font-bold text-slate-400 dark:text-slate-500 mt-0.5">{periodStats.weekly.count} active {periodStats.weekly.count === 1 ? "plan" : "plans"}</p>
+                      </div>
+                      <p className="text-lg font-black text-slate-800 dark:text-white font-mono mt-3 leading-none">
+                        ₱ {periodStats.weekly.amount.toLocaleString()}
+                      </p>
+                    </div>
+
+                    {/* Monthly */}
+                    <div className="p-4 rounded-[28px] bg-gradient-to-br from-pastel-salmon/15 to-pastel-salmon/2 dark:from-pastel-salmon/10 dark:to-transparent border border-pastel-pink/20 dark:border-pastel-pink/5 flex flex-col justify-between min-h-[110px] transition-all duration-300 active:scale-95 shadow-sm">
+                      <div>
+                        <span className="text-[9px] font-black text-pastel-pink-dark dark:text-pastel-salmon uppercase tracking-widest">Monthly</span>
+                        <p className="text-[8px] font-bold text-slate-400 dark:text-slate-500 mt-0.5">{periodStats.monthly.count} active {periodStats.monthly.count === 1 ? "plan" : "plans"}</p>
+                      </div>
+                      <p className="text-lg font-black text-slate-800 dark:text-white font-mono mt-3 leading-none">
+                        ₱ {periodStats.monthly.amount.toLocaleString()}
+                      </p>
+                    </div>
+
+                    {/* Quarterly */}
+                    <div className="p-4 rounded-[28px] bg-gradient-to-br from-pastel-coral/15 to-pastel-coral/2 dark:from-pastel-coral/10 dark:to-transparent border border-pastel-pink/20 dark:border-pastel-pink/5 flex flex-col justify-between min-h-[110px] transition-all duration-300 active:scale-95 shadow-sm">
+                      <div>
+                        <span className="text-[9px] font-black text-pastel-pink-dark dark:text-pastel-coral uppercase tracking-widest">Quarterly</span>
+                        <p className="text-[8px] font-bold text-slate-400 dark:text-slate-500 mt-0.5">{periodStats.quarterly.count} active {periodStats.quarterly.count === 1 ? "plan" : "plans"}</p>
+                      </div>
+                      <p className="text-lg font-black text-slate-800 dark:text-white font-mono mt-3 leading-none">
+                        ₱ {periodStats.quarterly.amount.toLocaleString()}
+                      </p>
+                    </div>
+
+                    {/* Yearly */}
+                    <div className="p-4 rounded-[28px] bg-gradient-to-br from-accent/15 to-accent/2 dark:from-accent/10 dark:to-transparent border border-pastel-pink/20 dark:border-pastel-pink/5 flex flex-col justify-between min-h-[110px] transition-all duration-300 active:scale-95 shadow-sm">
+                      <div>
+                        <span className="text-[9px] font-black text-pastel-pink-dark dark:text-accent uppercase tracking-widest">Yearly</span>
+                        <p className="text-[8px] font-bold text-slate-400 dark:text-slate-500 mt-0.5">{periodStats.yearly.count} active {periodStats.yearly.count === 1 ? "plan" : "plans"}</p>
+                      </div>
+                      <p className="text-lg font-black text-slate-800 dark:text-white font-mono mt-3 leading-none">
+                        ₱ {periodStats.yearly.amount.toLocaleString()}
+                      </p>
+                    </div>
                   </div>
                 </div>
                 

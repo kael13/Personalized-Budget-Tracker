@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+addimport React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Delete, HelpCircle, Landmark, Percent, RefreshCw } from "lucide-react";
 
@@ -98,9 +98,9 @@ export default function Calculator() {
       setEquation("-");
       return;
     }
-    
+
     if (display === "" || ["+", "-", "*", "/"].includes(display.slice(-1))) return;
-    
+
     setDisplay(display + op);
     setEquation(equation + op);
     setIsDone(false);
@@ -166,21 +166,19 @@ export default function Calculator() {
       <div className="flex bg-slate-50 dark:bg-slate-800 p-1 rounded-2xl border border-pastel-salmon/20 shrink-0">
         <button
           onClick={() => setCalcMode("standard")}
-          className={`flex-1 py-2 text-xs font-black rounded-xl transition-all cursor-pointer ${
-            calcMode === "standard"
-              ? "bg-white dark:bg-slate-700 text-pastel-pink-dark shadow-sm border border-pastel-salmon/10"
-              : "text-slate-400 dark:text-slate-500 hover:text-slate-600"
-          }`}
+          className={`flex-1 py-2 text-xs font-black rounded-xl transition-all cursor-pointer ${calcMode === "standard"
+            ? "bg-white dark:bg-slate-700 text-pastel-pink-dark shadow-sm border border-pastel-salmon/10"
+            : "text-slate-400 dark:text-slate-500 hover:text-slate-600"
+            }`}
         >
           Standard Math 🧮
         </button>
         <button
           onClick={() => setCalcMode("splitter")}
-          className={`flex-1 py-2 text-xs font-black rounded-xl transition-all cursor-pointer ${
-            calcMode === "splitter"
-              ? "bg-white dark:bg-slate-700 text-pastel-pink-dark shadow-sm border border-pastel-salmon/10"
-              : "text-slate-400 dark:text-slate-500 hover:text-slate-600"
-          }`}
+          className={`flex-1 py-2 text-xs font-black rounded-xl transition-all cursor-pointer ${calcMode === "splitter"
+            ? "bg-white dark:bg-slate-700 text-pastel-pink-dark shadow-sm border border-pastel-salmon/10"
+            : "text-slate-400 dark:text-slate-500 hover:text-slate-600"
+            }`}
         >
           Royal Ratio Split 👑
         </button>
@@ -314,11 +312,10 @@ export default function Calculator() {
                     <button
                       key={preset.val}
                       onClick={() => setSplitterRatio(preset.val as any)}
-                      className={`py-2 text-[10px] font-black rounded-xl border transition-all cursor-pointer ${
-                        splitterRatio === preset.val
-                          ? "bg-pastel-pink border-pastel-pink text-white shadow-sm"
-                          : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50"
-                      }`}
+                      className={`py-2 text-[10px] font-black rounded-xl border transition-all cursor-pointer ${splitterRatio === preset.val
+                        ? "bg-pastel-pink border-pastel-pink text-white shadow-sm"
+                        : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50"
+                        }`}
                     >
                       {preset.label}
                     </button>

@@ -36,6 +36,7 @@ export default function App() {
     totalBudgetAmount,
     maxDaysToConsume,
     globalCategoryData,
+    periodStats,
   } = useBudgetTracker();
 
   return (
@@ -62,13 +63,14 @@ export default function App() {
           toggleDarkMode={toggleDarkMode}
           darkMode={config.darkMode}
           chartColors={CHART_COLORS}
+          periodStats={periodStats}
         />
 
         {/* Right Panel / Desktop Dashboard Screen */}
         <section className="hidden xl:flex flex-grow flex-col gap-8 overflow-hidden">
           {/* Top Metric Cards */}
           <OverviewStats
-            totalBudget={totalBudgetAmount}
+            periodStats={periodStats}
             activeProfilesCount={budgets.length}
             maxDaysLeft={budgets.length > 0 ? maxDaysToConsume : "--"}
           />

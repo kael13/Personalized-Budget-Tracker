@@ -109,6 +109,45 @@ export function useBudgetTracker() {
   const maxDaysToConsume = budgets.length > 0 ? Math.max(...budgets.map((b) => b.daysToConsume)) : 0;
   const globalCategoryData = getGlobalCategoryData();
 
+  const getPeriodStats = () => {
+    const now = new Date();
+
+    // Start of current week (Monday)
+    const startOfWeek = new Date(now);
+    const day = now.getDay();
+    const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+    startOfWeek.setDate(diff);
+    startOfWeek.setHours(0, 0, 0, 0);
+
+    // Start of current month
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    // Start of current quarter
+    const quarter = Math.floor(now.getMonth() / 3);
+    const startOfQuarter = new Date(now.getFullYear(), quarter * 3, 1);
+    startOfQuarter.setHours(0, 0, 0, 0);
+
+    // Start of current year
+    const startOfYear = new Date(now.getFullYear(), 0, 1);
+    startOfYear.setHours(0, 0, 0, 0);
+
+    const getStatsForPeriod = (startDate: Date) => {
+      const filtered = budgets.filter((b) => new Date(b.createdAt) >= startDate);
+      const amount = filtered.reduce((sum, b) => sum + b.totalBudget, 0);
+      return { amount, count: filtered.length };
+    };
+
+    return {
+      weekly: getStatsForPeriod(startOfWeek),
+      monthly: getStatsForPeriod(startOfMonth),
+      quarterly: getStatsForPeriod(startOfQuarter),
+      yearly: getStatsForPeriod(startOfYear),
+    };
+  };
+
+  const periodStats = getPeriodStats();
+
   return {
     budgets,
     config,
@@ -134,5 +173,6 @@ export function useBudgetTracker() {
     totalBudgetAmount,
     maxDaysToConsume,
     globalCategoryData,
+    periodStats,
   };
 }
