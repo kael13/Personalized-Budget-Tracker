@@ -42,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             backgroundColor: Theme.of(context).colorScheme.surface,
             actions: [
-              IconButton(onPressed: () {}, icon: const Icon(LucideIcons.settings)),
+              IconButton(onPressed: () {}, icon: Icon(LucideIcons.settings)),
             ],
           ),
           if (_isLoading)
@@ -91,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {},
         label: const Text('New Plan'),
-        icon: const Icon(LucideIcons.plus),
+        icon: Icon(LucideIcons.plus),
       ),
     );
   }
@@ -130,7 +130,7 @@ class BudgetCard extends StatelessWidget {
             ),
           ],
         ),
-        trailing: const Icon(LucideIcons.chevronRight),
+        trailing: Icon(LucideIcons.chevronRight),
         onTap: () {},
       ),
     );

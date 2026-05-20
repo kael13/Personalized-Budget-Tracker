@@ -11,16 +11,16 @@ void main() {
       statusBarIconBrightness: Brightness.dark,
     ),
   );
-  runApp(const BloomBudgetApp());
+  runApp(const BudgetarianApp());
 }
 
-class BloomBudgetApp extends StatelessWidget {
-  const BloomBudgetApp({super.key});
+class BudgetarianApp extends StatelessWidget {
+  const BudgetarianApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Bloom Budget',
+      title: 'Budgetarian',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,
@@ -32,7 +32,7 @@ class BloomBudgetApp extends StatelessWidget {
           background: const Color(0xFFFDFDFD),
         ),
         textTheme: GoogleFonts.outfitTextTheme(),
-        cardTheme: CardTheme(
+        cardTheme: CardThemeData(
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(24),
@@ -40,7 +40,7 @@ class BloomBudgetApp extends StatelessWidget {
           ),
           color: Colors.white,
         ),
-        floatingActionButtonTheme: FloatingActionButtonThemeData(
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
           backgroundColor: const Color(0xFFFF8EAD),
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

@@ -13,7 +13,7 @@ export default function Header({ darkMode, toggleDarkMode }: HeaderProps) {
         <div className="w-9 h-9 bg-pastel-pink rounded-full flex items-center justify-center shadow-sm">
           <span className="text-white font-black text-lg">B</span>
         </div>
-        <h1 className="text-lg xl:text-xl font-bold text-pastel-pink-dark tracking-tight">BloomBudget</h1>
+        <h1 className="text-lg xl:text-xl font-bold text-pastel-pink-dark tracking-tight">Budgetarian</h1>
       </div>
       
       <div className="flex items-center gap-4 xl:gap-6">

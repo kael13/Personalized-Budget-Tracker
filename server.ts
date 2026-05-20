@@ -19,7 +19,7 @@ async function startServer() {
         "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
         "HTTP-Referer": "http://localhost:3000",
-        "X-Title": "BloomBudget Tracker"
+        "X-Title": "Budgetarian Tracker"
       },
       body: JSON.stringify({
         model: model,
