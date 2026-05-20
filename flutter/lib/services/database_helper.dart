@@ -22,7 +22,13 @@ class DatabaseHelper {
       path,
       version: 1,
       onCreate: _createDB,
+      onConfigure: _onConfigure,
     );
+  }
+
+  Future _onConfigure(Database db) async {
+    // Enable Foreign Key constraints to support ON DELETE CASCADE
+    await db.execute('PRAGMA foreign_keys = ON');
   }
 
   Future _createDB(Database db, int version) async {
@@ -61,32 +67,90 @@ class DatabaseHelper {
     ''');
   }
 
-  // Budget Crud
-  Future<int> insertBudget(BudgetAllocation budget) async {
+  // Nested SQLite Transaction to save a Budget along with its categories and subcategories
+  Future<void> saveBudget(BudgetAllocation budget) async {
     final db = await instance.database;
-    return await db.insert('budgets', budget.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
+
+    await db.transaction((txn) async {
+      // 1. Insert or update the main Budget record
+      await txn.insert(
+        'budgets',
+        budget.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+
+      // 2. Clear old categories (ON DELETE CASCADE will automatically clear subcategories)
+      await txn.delete(
+        'categories',
+        where: 'budget_id = ?',
+        whereArgs: [budget.id],
+      );
+
+      // 3. Insert categories and their respective subcategories
+      for (var category in budget.categories) {
+        await txn.insert(
+          'categories',
+          category.toMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+
+        for (var subCategory in category.subCategories) {
+          await txn.insert(
+            'sub_categories',
+            subCategory.toMap(),
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+        }
+      }
+    });
   }
 
+  // Retrieve nested Budget list
   Future<List<BudgetAllocation>> getBudgets() async {
     final db = await instance.database;
-    final result = await db.query('budgets', orderBy: 'created_at DESC');
-    return result.map((json) => BudgetAllocation.fromMap(json)).toList();
+
+    // 1. Fetch budgets
+    final budgetMaps = await db.query('budgets', orderBy: 'created_at DESC');
+    final List<BudgetAllocation> budgets = [];
+
+    for (var budgetMap in budgetMaps) {
+      final String budgetId = budgetMap['id'] as String;
+
+      // 2. Fetch categories for this budget
+      final categoryMaps = await db.query(
+        'categories',
+        where: 'budget_id = ?',
+        whereArgs: [budgetId],
+      );
+
+      final List<Category> categories = [];
+
+      for (var categoryMap in categoryMaps) {
+        final String categoryId = categoryMap['id'] as String;
+
+        // 3. Fetch subcategories for this category
+        final subCategoryMaps = await db.query(
+          'sub_categories',
+          where: 'category_id = ?',
+          whereArgs: [categoryId],
+        );
+
+        final List<SubCategory> subCategories = subCategoryMaps
+            .map((json) => SubCategory.fromMap(json))
+            .toList();
+
+        categories.add(Category.fromMap(categoryMap, subCategories: subCategories));
+      }
+
+      budgets.add(BudgetAllocation.fromMap(budgetMap, categories: categories));
+    }
+
+    return budgets;
   }
 
+  // Delete budget profile (will trigger ON DELETE CASCADE on children automatically)
   Future<int> deleteBudget(String id) async {
     final db = await instance.database;
     return await db.delete('budgets', where: 'id = ?', whereArgs: [id]);
-  }
-
-  // Category Crud
-  Future<int> insertCategory(Category category) async {
-    final db = await instance.database;
-    return await db.insert('categories', category.toMap(), conflictAlgorithm: ConflictAlgorithm.replace);
-  }
-
-  Future<List<Category>> getCategories(String budgetId) async {
-    final db = await instance.database;
-    final result = await db.query('categories', where: 'budget_id = ?', whereArgs: [budgetId]);
-    return result.map((json) => Category.fromMap(json)).toList();
   }
 }
