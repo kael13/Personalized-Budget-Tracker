@@ -10,7 +10,7 @@ class DatabaseHelper {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB('bloom_budget.db');
+    _database = await _initDB('budgetarian.db');
     return _database!;
   }
 

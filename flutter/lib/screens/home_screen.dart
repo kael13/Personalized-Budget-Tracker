@@ -207,7 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 2),
               Text(
                 appState.activeTab == 'dashboard'
-                    ? 'Bloom Budget'
+                    ? 'Budgetarian'
                     : appState.activeTab == 'analytics'
                         ? 'Visual Insights'
                         : 'Calculator Standard',

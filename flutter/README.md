@@ -1,6 +1,6 @@
-# Bloom Budget - Flutter (iOS)
+# Budgetarian - Flutter (iOS)
 
-This is the Flutter refactor of the Bloom Budget app, optimized for iOS with native SQLite storage.
+This is the Flutter refactor of the Budgetarian app, optimized for iOS with native SQLite storage.
 
 ## Project Structure
 - `lib/models/`: Data models for Budget, Category, and Sub-category.
