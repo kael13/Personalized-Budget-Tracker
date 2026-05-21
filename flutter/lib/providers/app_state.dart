@@ -11,9 +11,13 @@ class AppState extends ChangeNotifier {
   bool _isDarkMode = false;
   List<BudgetAllocation> _budgets = [];
   bool _isLoading = true;
+  bool _isInitialized = false;
   String _activeTab = 'dashboard'; // 'dashboard', 'analytics', 'calculator'
   bool _isEditMode = false;
   List<String> _selectedBudgetIds = [];
+
+  // Onboarding state
+  bool _hasSeenOnboarding = false;
 
   // Settings fields
   String? _profilePicturePath;
@@ -26,9 +30,12 @@ class AppState extends ChangeNotifier {
   bool get isDarkMode => _isDarkMode;
   List<BudgetAllocation> get budgets => _budgets;
   bool get isLoading => _isLoading;
+  bool get isInitialized => _isInitialized;
   String get activeTab => _activeTab;
   bool get isEditMode => _isEditMode;
   List<String> get selectedBudgetIds => _selectedBudgetIds;
+
+  bool get hasSeenOnboarding => _hasSeenOnboarding;
 
   String? get profilePicturePath => _profilePicturePath;
   bool get notificationsEnabled => _notificationsEnabled;
@@ -45,12 +52,15 @@ class AppState extends ChangeNotifier {
     await loadTheme();
     await _loadSettings();
     await loadBudgets();
+    _isInitialized = true;
+    notifyListeners();
   }
 
   // ─── Settings persistence ────────────────────────────────────────
 
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
+    _hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
     _profilePicturePath = prefs.getString('profile_picture_path');
     _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
     _notifThresholdAlerts = prefs.getBool('notif_threshold_alerts') ?? true;
@@ -148,6 +158,13 @@ class AppState extends ChangeNotifier {
     _profilePicturePath = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('profile_picture_path');
+    notifyListeners();
+  }
+
+  Future<void> setSeenOnboarding() async {
+    _hasSeenOnboarding = true;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('has_seen_onboarding', true);
     notifyListeners();
   }
 
