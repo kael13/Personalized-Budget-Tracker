@@ -5,9 +5,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'providers/app_state.dart';
 import 'screens/home_screen.dart';
 import 'theme/app_colors.dart';
+import 'services/notification_service.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await NotificationService.instance.init();
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -43,7 +45,6 @@ class BudgetarianApp extends StatelessWidget {
           secondary: AppColors.pastelPinkLight,
           surface: Colors.white,
           onSurface: AppColors.slate700,
-          background: AppColors.backgroundSoft,
         ),
         textTheme: GoogleFonts.outfitTextTheme(ThemeData.light().textTheme).copyWith(
           bodyMedium: GoogleFonts.outfit(color: AppColors.slate700, fontWeight: FontWeight.w500),
@@ -69,7 +70,6 @@ class BudgetarianApp extends StatelessWidget {
           secondary: AppColors.slate700,
           surface: AppColors.slate900,
           onSurface: Colors.white,
-          background: AppColors.slate950,
         ),
         textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme).copyWith(
           bodyMedium: GoogleFonts.outfit(color: AppColors.slate300, fontWeight: FontWeight.w500),

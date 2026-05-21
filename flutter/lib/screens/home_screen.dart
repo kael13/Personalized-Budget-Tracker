@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +13,7 @@ import '../dialogs/detail_sheet.dart';
 import '../dialogs/pin_lock_dialog.dart';
 import '../screens/analytics_screen.dart';
 import '../screens/calculator_screen.dart';
+import '../screens/settings_screen.dart';
 import '../theme/app_colors.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -192,35 +194,66 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                formattedDate,
-                style: GoogleFonts.outfit(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 2.0,
-                  color: isDark ? AppColors.slate500 : AppColors.slate400,
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  formattedDate,
+                  style: GoogleFonts.outfit(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2.0,
+                    color: isDark ? AppColors.slate500 : AppColors.slate400,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                appState.activeTab == 'dashboard'
-                    ? 'Budgetarian'
-                    : appState.activeTab == 'analytics'
-                        ? 'Visual Insights'
-                        : 'Calculator Standard',
-                style: GoogleFonts.outfit(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                  color: isDark ? Colors.white : AppColors.slate700,
+                const SizedBox(height: 2),
+                Text(
+                  appState.activeTab == 'dashboard'
+                      ? 'Budgetarian'
+                      : appState.activeTab == 'analytics'
+                          ? 'Visual Insights'
+                          : 'Calculator Standard',
+                  style: GoogleFonts.outfit(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    color: isDark ? Colors.white : AppColors.slate700,
                 ),
               ),
             ],
           ),
+          ),
           Row(
             children: [
+              // Profile Avatar
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                  );
+                },
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.pastelPinkLight.withValues(alpha: isDark ? 0.2 : 0.5),
+                    border: Border.all(color: AppColors.pastelPink, width: 2),
+                    image: appState.profilePicturePath != null
+                        ? DecorationImage(
+                            image: FileImage(File(appState.profilePicturePath!)),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                  child: appState.profilePicturePath == null
+                      ? Icon(Icons.person_outline, size: 18, color: AppColors.pastelPinkDark.withValues(alpha: 0.6))
+                      : null,
+                ),
+              ),
+              const SizedBox(width: 8),
+
               // Dashboard edit actions
               if (appState.activeTab == 'dashboard' && appState.budgets.isNotEmpty) ...[
                 GestureDetector(
@@ -242,6 +275,29 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(width: 8),
               ],
+
+              // Settings icon
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: AppColors.pastelPinkLight.withValues(alpha: isDark ? 0.15 : 0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.settings_outlined,
+                    size: 18,
+                    color: AppColors.pastelPinkDark,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
 
               // Dark Mode toggle
               GestureDetector(
