@@ -362,18 +362,10 @@ class _BudgetModalState extends State<BudgetModal> {
                           _currentStep--;
                         });
                       },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        side: const BorderSide(color: AppColors.pastelPink),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                      ),
                       child: Text(
                         'Back',
                         style: GoogleFonts.outfit(
                           fontWeight: FontWeight.w900,
-                          color: AppColors.pastelPinkDark,
                         ),
                       ),
                     ),
@@ -399,15 +391,6 @@ class _BudgetModalState extends State<BudgetModal> {
                         _handleSave();
                       }
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.pastelPink,
-                      disabledBackgroundColor: isDark ? AppColors.slate850 : AppColors.slate200,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                    ),
                     child: Text(
                       _currentStep == 3
                           ? 'Save Profile ✨'

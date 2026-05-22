@@ -208,18 +208,25 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text(
-                  appState.activeTab == 'dashboard'
-                      ? 'Budgetarian'
-                      : appState.activeTab == 'analytics'
-                          ? 'Visual Insights'
-                          : 'Calculator Standard',
-                  style: GoogleFonts.outfit(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                    color: isDark ? Colors.white : AppColors.slate700,
-                ),
-              ),
+                appState.activeTab == 'dashboard'
+                    ? Text(
+                        'Budgetarian',
+                        style: GoogleFonts.outfit(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          color: isDark ? Colors.white : AppColors.slate700,
+                        ),
+                      )
+                    : Text(
+                        appState.activeTab == 'analytics'
+                            ? 'Visual Insights'
+                            : 'Calculator Standard',
+                        style: GoogleFonts.outfit(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          color: isDark ? Colors.white : AppColors.slate700,
+                      ),
+                    ),
             ],
           ),
           ),
@@ -436,10 +443,9 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               TextButton(
                 onPressed: count > 0 ? () => appState.bulkPinToggle() : null,
-                child: Text(
+                child: const Text(
                   'Pin/Unpin',
                   style: TextStyle(
-                    color: count > 0 ? AppColors.pastelPinkDark : Colors.grey,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -517,14 +523,6 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 8),
               ElevatedButton(
                 onPressed: () => _openBudgetModal(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.pastelPink,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  elevation: 0,
-                ),
                 child: Text(
                   'Start Growing Your Savings',
                   style: GoogleFonts.outfit(

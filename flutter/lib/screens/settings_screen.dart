@@ -15,6 +15,29 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final ImagePicker _picker = ImagePicker();
+  late final TextEditingController _nicknameController;
+  bool _nicknameInitialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_nicknameInitialized) {
+      _nicknameController.text = context.read<AppState>().nickname ?? '';
+      _nicknameInitialized = true;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _nicknameController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _nicknameController.dispose();
+    super.dispose();
+  }
 
   Future<void> _pickImage(ImageSource source) async {
     final xFile = await _picker.pickImage(source: source, maxWidth: 512, maxHeight: 512);
@@ -83,8 +106,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Navigator.pop(ctx);
                     appState.removeProfilePicture();
                   },
-                ),
-            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Tap to change',
+            style: GoogleFonts.outfit(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: isDark ? AppColors.slate400 : AppColors.slate500,
+            ),
+          ),
+          const SizedBox(height: 20),
+          TextField(
+            controller: _nicknameController,
+            style: GoogleFonts.outfit(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: isDark ? Colors.white : AppColors.slate700,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Enter your nickname',
+              hintStyle: GoogleFonts.outfit(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isDark ? AppColors.slate500 : AppColors.slate400,
+              ),
+              filled: true,
+              fillColor: isDark ? AppColors.slate800 : AppColors.backgroundSoft,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: AppColors.pastelPink, width: 2),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            ),
+            onChanged: (val) => appState.setNickname(val),
+          ),
+        ],
           ),
         );
       },
@@ -193,6 +254,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
               fontWeight: FontWeight.w700,
               color: isDark ? AppColors.slate400 : AppColors.slate500,
             ),
+          ),
+          const SizedBox(height: 20),
+          TextField(
+            controller: _nicknameController,
+            style: GoogleFonts.outfit(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: isDark ? Colors.white : AppColors.slate700,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Enter your nickname',
+              hintStyle: GoogleFonts.outfit(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isDark ? AppColors.slate500 : AppColors.slate400,
+              ),
+              filled: true,
+              fillColor: isDark ? AppColors.slate800 : AppColors.backgroundSoft,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: AppColors.pastelPink, width: 2),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            ),
+            onChanged: (val) => appState.setNickname(val),
           ),
         ],
       ),

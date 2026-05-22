@@ -16,6 +16,7 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _pageController = PageController();
   final ImagePicker _picker = ImagePicker();
+  final TextEditingController _nicknameController = TextEditingController();
   int _currentPage = 0;
 
   static const _slides = [
@@ -39,6 +40,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   void dispose() {
     _pageController.dispose();
+    _nicknameController.dispose();
     super.dispose();
   }
 
@@ -132,7 +134,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   Future<void> _onGetStarted() async {
-    await context.read<AppState>().setSeenOnboarding();
+    final appState = context.read<AppState>();
+    await appState.setNickname(_nicknameController.text);
+    await appState.setSeenOnboarding();
   }
 
   @override
@@ -151,20 +155,27 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: AppColors.pastelPinkLight.withValues(alpha: isDark ? 0.15 : 0.5),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: isDark ? const Color(0x33FFB6C1) : const Color(0x1BFFB6C1),
-                        width: 1.5,
+                  Flexible(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: AppColors.pastelPinkLight.withValues(alpha: isDark ? 0.15 : 0.5),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isDark ? const Color(0x33FFB6C1) : const Color(0x1BFFB6C1),
+                          width: 1.5,
+                        ),
                       ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('🌸', style: TextStyle(fontSize: 14)),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Image.asset(
+                              'assets/applogo.png',
+                              width: 24,
+                              height: 24,
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           'Budgetarian',
@@ -177,7 +188,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       ],
                     ),
                   ),
-                  if (_currentPage < _slides.length)
+                ),
+              ),
+              if (_currentPage < _slides.length)
                     TextButton(
                       onPressed: _onSkip,
                       child: Text(
@@ -339,18 +352,38 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ),
           ),
           const SizedBox(height: 40),
+          TextField(
+            controller: _nicknameController,
+            style: GoogleFonts.outfit(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: isDark ? Colors.white : AppColors.slate700,
+            ),
+            decoration: InputDecoration(
+              hintText: 'Enter your nickname',
+              hintStyle: GoogleFonts.outfit(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isDark ? AppColors.slate500 : AppColors.slate400,
+              ),
+              filled: true,
+              fillColor: isDark ? AppColors.slate800 : AppColors.backgroundSoft,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: const BorderSide(color: AppColors.pastelPink, width: 2),
+              ),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            ),
+          ),
+          const SizedBox(height: 24),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _onGetStarted,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.pastelPink,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                elevation: 0,
-              ),
               child: Text(
                 'Get Started',
                 style: GoogleFonts.outfit(

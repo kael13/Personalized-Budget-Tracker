@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'dart:math';
 import '../models/budget_models.dart';
 import '../theme/app_colors.dart';
+import 'sheet_view_modal.dart';
 
 class DetailSheet extends StatefulWidget {
   final BudgetAllocation budget;
@@ -994,18 +995,10 @@ class _DetailSheetState extends State<DetailSheet> {
                       Expanded(
                         child: OutlinedButton(
                           onPressed: _handleDiscard,
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            side: const BorderSide(color: AppColors.pastelPink),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                          ),
                           child: Text(
                             'Discard',
                             style: GoogleFonts.outfit(
                               fontWeight: FontWeight.w900,
-                              color: AppColors.pastelPinkDark,
                             ),
                           ),
                         ),
@@ -1014,15 +1007,6 @@ class _DetailSheetState extends State<DetailSheet> {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: errMsg == null ? _handleSave : null,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.pastelPink,
-                            disabledBackgroundColor: isDark ? AppColors.slate800 : AppColors.slate200,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                          ),
                           child: Text(
                             'Save Changes ✨',
                             style: GoogleFonts.outfit(
@@ -1039,24 +1023,16 @@ class _DetailSheetState extends State<DetailSheet> {
                       Expanded(
                         child: OutlinedButton(
                           onPressed: widget.onDelete,
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            side: const BorderSide(color: AppColors.pastelPink),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.delete_outline_rounded,
-                                  color: AppColors.pastelPinkDark, size: 18),
+                              Icon(Icons.delete_outline_rounded,
+                                  color: Theme.of(context).brightness == Brightness.dark ? AppColors.pastelPink : AppColors.pastelPinkDark, size: 18),
                               const SizedBox(width: 4),
                               Text(
                                 'Delete Profile',
                                 style: GoogleFonts.outfit(
                                   fontWeight: FontWeight.w900,
-                                  color: AppColors.pastelPinkDark,
                                 ),
                               ),
                             ],
@@ -1067,29 +1043,22 @@ class _DetailSheetState extends State<DetailSheet> {
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () {
-                            // Dummy PDF Share dialog
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('PDF Export simulated! 📄🎀'),
+                            showDialog(
+                              context: context,
+                              builder: (_) => SheetViewModal(
+                                budget: widget.budget,
+                                onUpdate: widget.onUpdate,
                               ),
                             );
                           },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.pastelPink,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            elevation: 0,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                          ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.share_outlined,
+                              const Icon(Icons.table_chart_outlined,
                                   color: Colors.white, size: 18),
                               const SizedBox(width: 4),
                               Text(
-                                'Export PDF',
+                                'Sheet View',
                                 style: GoogleFonts.outfit(
                                   fontWeight: FontWeight.w900,
                                   color: Colors.white,

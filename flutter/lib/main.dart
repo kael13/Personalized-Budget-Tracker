@@ -51,6 +51,61 @@ class BudgetarianApp extends StatelessWidget {
           bodyMedium: GoogleFonts.outfit(color: AppColors.slate700, fontWeight: FontWeight.w500),
           titleLarge: GoogleFonts.outfit(fontWeight: FontWeight.w900, color: AppColors.slate700),
         ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.pastelPink,
+            foregroundColor: Colors.white,
+            disabledBackgroundColor: AppColors.slate200,
+            disabledForegroundColor: AppColors.slate400,
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            textStyle: GoogleFonts.outfit(
+              fontWeight: FontWeight.w900,
+              fontSize: 14,
+            ),
+          ).copyWith(
+            overlayColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.pressed)) {
+                return AppColors.pastelPinkDark.withValues(alpha: 0.3);
+              }
+              return null;
+            }),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.pastelPinkDark,
+            disabledForegroundColor: AppColors.slate400,
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            textStyle: GoogleFonts.outfit(
+              fontWeight: FontWeight.w900,
+              fontSize: 14,
+            ),
+          ).copyWith(
+            side: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.disabled)) {
+                return const BorderSide(color: AppColors.slate200);
+              }
+              return const BorderSide(color: AppColors.pastelPink);
+            }),
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.pastelPinkDark,
+            textStyle: GoogleFonts.outfit(
+              fontWeight: FontWeight.w800,
+              fontSize: 14,
+            ),
+          ),
+        ),
         cardTheme: CardThemeData(
           elevation: 0,
           color: Colors.white,
@@ -75,6 +130,61 @@ class BudgetarianApp extends StatelessWidget {
         textTheme: GoogleFonts.outfitTextTheme(ThemeData.dark().textTheme).copyWith(
           bodyMedium: GoogleFonts.outfit(color: AppColors.slate300, fontWeight: FontWeight.w500),
           titleLarge: GoogleFonts.outfit(fontWeight: FontWeight.w900, color: Colors.white),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.pastelPink,
+            foregroundColor: Colors.white,
+            disabledBackgroundColor: AppColors.slate800,
+            disabledForegroundColor: AppColors.slate500,
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            textStyle: GoogleFonts.outfit(
+              fontWeight: FontWeight.w900,
+              fontSize: 14,
+            ),
+          ).copyWith(
+            overlayColor: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.pressed)) {
+                return AppColors.pastelPinkDark.withValues(alpha: 0.4);
+              }
+              return null;
+            }),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.pastelPink,
+            disabledForegroundColor: AppColors.slate500,
+            elevation: 0,
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            textStyle: GoogleFonts.outfit(
+              fontWeight: FontWeight.w900,
+              fontSize: 14,
+            ),
+          ).copyWith(
+            side: WidgetStateProperty.resolveWith((states) {
+              if (states.contains(WidgetState.disabled)) {
+                return const BorderSide(color: AppColors.slate700);
+              }
+              return BorderSide(color: AppColors.pastelPink.withValues(alpha: 0.6));
+            }),
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.pastelPink,
+            textStyle: GoogleFonts.outfit(
+              fontWeight: FontWeight.w800,
+              fontSize: 14,
+            ),
+          ),
         ),
         cardTheme: CardThemeData(
           elevation: 0,
@@ -103,9 +213,10 @@ class _AppEntry extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                '🌸',
-                style: TextStyle(fontSize: 48),
+              Image.asset(
+                'assets/applogo.png',
+                width: 120,
+                height: 120,
               ),
               const SizedBox(height: 16),
               Text(

@@ -20,6 +20,7 @@ class AppState extends ChangeNotifier {
   bool _hasSeenOnboarding = false;
 
   // Settings fields
+  String? _nickname;
   String? _profilePicturePath;
   bool _notificationsEnabled = true;
   bool _notifThresholdAlerts = true;
@@ -37,6 +38,7 @@ class AppState extends ChangeNotifier {
 
   bool get hasSeenOnboarding => _hasSeenOnboarding;
 
+  String? get nickname => _nickname;
   String? get profilePicturePath => _profilePicturePath;
   bool get notificationsEnabled => _notificationsEnabled;
   bool get notifThresholdAlerts => _notifThresholdAlerts;
@@ -61,7 +63,12 @@ class AppState extends ChangeNotifier {
   Future<void> _loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
     _hasSeenOnboarding = prefs.getBool('has_seen_onboarding') ?? false;
+    _nickname = prefs.getString('nickname');
     _profilePicturePath = prefs.getString('profile_picture_path');
+    if (_profilePicturePath != null && !File(_profilePicturePath!).existsSync()) {
+      _profilePicturePath = null;
+      await prefs.remove('profile_picture_path');
+    }
     _notificationsEnabled = prefs.getBool('notifications_enabled') ?? true;
     _notifThresholdAlerts = prefs.getBool('notif_threshold_alerts') ?? true;
     _notifDailyReminder = prefs.getBool('notif_daily_reminder') ?? true;
@@ -158,6 +165,17 @@ class AppState extends ChangeNotifier {
     _profilePicturePath = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('profile_picture_path');
+    notifyListeners();
+  }
+
+  Future<void> setNickname(String? val) async {
+    _nickname = val?.isEmpty == true ? null : val;
+    final prefs = await SharedPreferences.getInstance();
+    if (_nickname != null) {
+      await prefs.setString('nickname', _nickname!);
+    } else {
+      await prefs.remove('nickname');
+    }
     notifyListeners();
   }
 
