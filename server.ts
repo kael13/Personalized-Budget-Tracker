@@ -27,12 +27,12 @@ async function startServer() {
           {
             role: "user",
             content: `
-              Analyze the following budget data and provide 3 short, helpful, and "girly pop" style recommendations for saving money. 
-              The tone should be supportive, modern, and fun. 
+              Analyze the following budget data and provide a short budget summary in Taglish (Tagalog + English).
+              Focus on the total budget, top spending categories, and savings rate.
+              Keep it fun, supportive, and "girly pop" ang vibes.
               Data: ${JSON.stringify(budgets)}
               
-              Format the response strictly as a JSON array of strings: ["rec1", "rec2", "rec3"]. 
-              Return only the JSON array. Do not include markdown code block formatting or any extra conversational text.
+              Return only the summary text. No JSON, no markdown, no lists.
             `
           }
         ]
@@ -61,7 +61,7 @@ async function startServer() {
     return content;
   }
 
-  // OpenRouter API Proxy with high-availability model fallback
+  // OpenRouter API Proxy
   app.post("/api/analyze-spending", async (req, res) => {
     try {
       const { budgets } = req.body;
@@ -71,22 +71,23 @@ async function startServer() {
         return res.status(500).json({ error: "OpenRouter API key not configured" });
       }
 
-      let content = "";
-      const primaryModel = "deepseek/deepseek-v4-flash:free";
-      const fallbackModel = "openai/gpt-oss-120b:free";
-
+      const primaryModel = "openai/gpt-oss-120b:free";
+      const fallbackModel = "google/gemma-4-31b-it:free";
+      
+      let content: string;
       try {
-        console.log(`[AI Proxy] Attempting primary model: ${primaryModel}...`);
+        console.log(`[AI Proxy] Querying model: ${primaryModel}...`);
         content = await callOpenRouter(openRouterApiKey, primaryModel, budgets);
-      } catch (primaryError: any) {
-        console.warn(`[AI Proxy] Primary model ${primaryModel} failed: ${primaryError.message}. Triggering fallback model: ${fallbackModel}...`);
+      } catch (primaryError) {
+        console.error(`[AI Proxy] Primary model (${primaryModel}) failed:`, primaryError);
+        console.log(`[AI Proxy] Trying fallback model: ${fallbackModel}...`);
         content = await callOpenRouter(openRouterApiKey, fallbackModel, budgets);
       }
 
-      const recommendations = JSON.parse(content.replace(/```json|```/g, "").trim());
-      res.json({ recommendations });
+      const summary = content.replace(/```json|```|^"|"$/g, "").trim();
+      res.json({ summary });
     } catch (error: any) {
-      console.error("OpenRouter Analysis Error (Both primary and fallback models failed):", error);
+      console.error("OpenRouter Analysis Error:", error);
       res.status(500).json({ error: "Failed to analyze spending via OpenRouter" });
     }
   });

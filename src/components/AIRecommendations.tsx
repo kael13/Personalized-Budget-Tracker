@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Sparkles, Loader2, PartyPopper, Zap, Heart } from "lucide-react";
+import { Sparkles, Loader2, Zap, Heart } from "lucide-react";
 import type { BudgetAllocation } from "../types";
 
 interface AIRecommendationsProps {
@@ -9,7 +9,7 @@ interface AIRecommendationsProps {
 
 export default function AIRecommendations({ budgets }: AIRecommendationsProps) {
   const [loading, setLoading] = useState(false);
-  const [recommendations, setRecommendations] = useState<string[]>([]);
+  const [summary, setSummary] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const fetchRecommendations = async () => {
@@ -27,7 +27,7 @@ export default function AIRecommendations({ budgets }: AIRecommendationsProps) {
       if (!response.ok) throw new Error("Failed to get recommendations");
       
       const data = await response.json();
-      setRecommendations(data.recommendations);
+      setSummary(data.summary);
     } catch (err) {
       console.error(err);
       setError("AI is feeling shy right now. Try again later! 🌸");
@@ -37,7 +37,7 @@ export default function AIRecommendations({ budgets }: AIRecommendationsProps) {
   };
 
   useEffect(() => {
-    if (budgets.length > 0 && recommendations.length === 0) {
+    if (budgets.length > 0 && !summary) {
       fetchRecommendations();
     }
   }, [budgets]);
@@ -94,22 +94,20 @@ export default function AIRecommendations({ budgets }: AIRecommendationsProps) {
             animate={{ opacity: 1, y: 0 }}
             className="space-y-4"
           >
-            {recommendations.map((rec, i) => (
+            {summary && (
               <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1 }}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
                 className="p-5 rounded-[28px] bg-[#FFF8FA] dark:bg-slate-800 border-l-4 border-l-pastel-pink-dark shadow-sm flex gap-4 items-start group hover:bg-pastel-pink-light dark:hover:bg-slate-700 transition-colors"
               >
                 <div className="w-8 h-8 rounded-full bg-white dark:bg-slate-700 flex items-center justify-center shrink-0 text-pastel-pink-dark shadow-sm group-hover:scale-110 transition-transform">
-                  {i === 0 ? <Heart size={16} /> : i === 1 ? <PartyPopper size={16} /> : <Zap size={16} />}
+                  <Heart size={16} />
                 </div>
                 <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed font-bold">
-                  {rec}
+                  {summary}
                 </p>
               </motion.div>
-            ))}
+            )}
           </motion.div>
         )}
       </AnimatePresence>
