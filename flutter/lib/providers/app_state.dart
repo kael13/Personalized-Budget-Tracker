@@ -1,9 +1,12 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import '../models/budget_models.dart';
+import '../models/expense_model.dart';
+import '../models/savings_goal_model.dart';
 import '../services/database_helper.dart';
 import '../services/notification_service.dart';
 
@@ -28,6 +31,12 @@ class AppState extends ChangeNotifier {
   TimeOfDay _notifDailyReminderTime = const TimeOfDay(hour: 20, minute: 0);
   bool _notifExpiryWarnings = true;
 
+  // Expense Logging
+  List<Expense> _expenses = [];
+
+  // Savings Goals
+  List<SavingsGoal> _savingsGoals = [];
+
   bool get isDarkMode => _isDarkMode;
   List<BudgetAllocation> get budgets => _budgets;
   bool get isLoading => _isLoading;
@@ -35,6 +44,8 @@ class AppState extends ChangeNotifier {
   String get activeTab => _activeTab;
   bool get isEditMode => _isEditMode;
   List<String> get selectedBudgetIds => _selectedBudgetIds;
+  List<Expense> get expenses => _expenses;
+  List<SavingsGoal> get savingsGoals => _savingsGoals;
 
   bool get hasSeenOnboarding => _hasSeenOnboarding;
 
@@ -54,6 +65,7 @@ class AppState extends ChangeNotifier {
     await loadTheme();
     await _loadSettings();
     await loadBudgets();
+    await loadSavingsGoals();
     _isInitialized = true;
     notifyListeners();
   }
@@ -316,5 +328,96 @@ class AppState extends ChangeNotifier {
     _selectedBudgetIds.clear();
     _isEditMode = false;
     await loadBudgets();
+  }
+
+  // ─── Expense Logging ──────────────────────────────────────────────
+
+  String _generateId() => Random().nextInt(10000000).toString();
+
+  Future<void> logExpense({
+    required String subCategoryId,
+    required double amount,
+    required String description,
+    required DateTime date,
+  }) async {
+    final expense = Expense(
+      id: _generateId(),
+      subCategoryId: subCategoryId,
+      amount: amount,
+      description: description,
+      date: date,
+      createdAt: DateTime.now(),
+    );
+
+    await DatabaseHelper.instance.saveExpense(expense);
+
+    // Recalculate spent amounts
+    final subTotal = await DatabaseHelper.instance.getSubCategoryTotalSpent(subCategoryId);
+    await DatabaseHelper.instance.updateSubCategorySpent(subCategoryId, subTotal);
+
+    // Find category for this subcategory
+    for (var budget in _budgets) {
+      for (var cat in budget.categories) {
+        final subIdx = cat.subCategories.indexWhere((s) => s.id == subCategoryId);
+        if (subIdx != -1) {
+          final catTotal = await DatabaseHelper.instance.getCategoryTotalSpent(cat.id);
+          await DatabaseHelper.instance.updateCategorySpent(cat.id, catTotal);
+        }
+      }
+    }
+
+    await loadBudgets();
+  }
+
+  Future<void> deleteExpense(String expenseId) async {
+    final expense = _expenses.firstWhere((e) => e.id == expenseId);
+    final subCategoryId = expense.subCategoryId;
+
+    await DatabaseHelper.instance.deleteExpense(expenseId);
+
+    final subTotal = await DatabaseHelper.instance.getSubCategoryTotalSpent(subCategoryId);
+    await DatabaseHelper.instance.updateSubCategorySpent(subCategoryId, subTotal);
+
+    for (var budget in _budgets) {
+      for (var cat in budget.categories) {
+        final subIdx = cat.subCategories.indexWhere((s) => s.id == subCategoryId);
+        if (subIdx != -1) {
+          final catTotal = await DatabaseHelper.instance.getCategoryTotalSpent(cat.id);
+          await DatabaseHelper.instance.updateCategorySpent(cat.id, catTotal);
+        }
+      }
+    }
+
+    await loadBudgets();
+  }
+
+  Future<List<Expense>> getExpensesForBudget(String budgetId) async {
+    return await DatabaseHelper.instance.getExpensesByBudget(budgetId);
+  }
+
+  Future<List<Expense>> getExpensesForSubCategory(String subCategoryId) async {
+    return await DatabaseHelper.instance.getExpensesBySubCategory(subCategoryId);
+  }
+
+  // ─── Savings Goals ────────────────────────────────────────────────
+
+  Future<void> loadSavingsGoals() async {
+    _savingsGoals = await DatabaseHelper.instance.getSavingsGoals();
+    notifyListeners();
+  }
+
+  Future<void> addSavingsGoal(SavingsGoal goal) async {
+    await DatabaseHelper.instance.saveSavingsGoal(goal);
+    await loadSavingsGoals();
+  }
+
+  Future<void> addToFund(String goalId, double amount) async {
+    await DatabaseHelper.instance.addToSavingsGoal(goalId, amount);
+    await loadSavingsGoals();
+  }
+
+  Future<void> deleteSavingsGoal(String id) async {
+    await DatabaseHelper.instance.deleteSavingsGoal(id);
+    await loadSavingsGoals();
   }
 }

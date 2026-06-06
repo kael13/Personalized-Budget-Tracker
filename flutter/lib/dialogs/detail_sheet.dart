@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import 'dart:math';
 import '../models/budget_models.dart';
+import '../models/expense_model.dart';
+import '../providers/app_state.dart';
 import '../theme/app_colors.dart';
+import '../widgets/log_expense_sheet.dart';
 import 'sheet_view_modal.dart';
 
 class DetailSheet extends StatefulWidget {
@@ -28,6 +33,7 @@ class DetailSheet extends StatefulWidget {
 
 class _DetailSheetState extends State<DetailSheet> {
   late List<Category> _localCategories;
+  List<Expense> _expenses = [];
   final List<Color> _chartColors = [
     AppColors.pastelPinkDark,
     AppColors.pastelPink,
@@ -40,6 +46,15 @@ class _DetailSheetState extends State<DetailSheet> {
   void initState() {
     super.initState();
     _initLocalCategories();
+    _loadExpenses();
+  }
+
+  Future<void> _loadExpenses() async {
+    final appState = Provider.of<AppState>(context, listen: false);
+    final loaded = await appState.getExpensesForBudget(widget.budget.id);
+    if (mounted) {
+      setState(() => _expenses = loaded);
+    }
   }
 
   void _initLocalCategories() {
@@ -343,6 +358,29 @@ class _DetailSheetState extends State<DetailSheet> {
                 ),
                 Row(
                   children: [
+                    GestureDetector(
+                      onTap: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          backgroundColor: Colors.transparent,
+                          builder: (_) => LogExpenseSheet(preSelectedBudget: widget.budget),
+                        ).then((_) => _loadExpenses());
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.pastelPinkLight.withValues(alpha: isDark ? 0.15 : 0.5),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.post_add_rounded,
+                          size: 18,
+                          color: AppColors.pastelPinkDark,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     GestureDetector(
                       onTap: widget.onEdit,
                       child: Container(
@@ -972,6 +1010,104 @@ class _DetailSheetState extends State<DetailSheet> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 16),
+
+                  // Expense History
+                  if (_expenses.isNotEmpty) ...[
+                    Text(
+                      'EXPENSE HISTORY',
+                      style: GoogleFonts.outfit(
+                        fontSize: 9,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 2.0,
+                        color: isDark ? AppColors.slate500 : AppColors.slate400,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ..._expenses.take(10).map((expense) {
+                      final subCat = widget.budget.categories
+                          .expand((c) => c.subCategories)
+                          .firstWhere(
+                            (s) => s.id == expense.subCategoryId,
+                            orElse: () => SubCategory(
+                              id: '', categoryId: '', name: 'Unknown',
+                              allocatedAmount: 0, spentAmount: 0,
+                            ),
+                          );
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isDark ? AppColors.slate850 : AppColors.slate50,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isDark ? AppColors.slate800 : AppColors.slate150,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: AppColors.pastelPink.withValues(alpha: isDark ? 0.12 : 0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(Icons.receipt_long_rounded, size: 16, color: AppColors.pastelPinkDark),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    expense.description.isNotEmpty ? expense.description : subCat.name,
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w900,
+                                      color: isDark ? Colors.white : AppColors.slate700,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (expense.description.isNotEmpty)
+                                    Text(
+                                      subCat.name,
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 9,
+                                        color: isDark ? AppColors.slate500 : AppColors.slate450,
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  '${widget.budget.currency} ${expense.amount.toStringAsFixed(0)}',
+                                  style: GoogleFonts.jetBrainsMono(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w900,
+                                    color: AppColors.pastelPinkDark,
+                                  ),
+                                ),
+                                Text(
+                                  DateFormat('MMM d').format(expense.date),
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 9,
+                                    color: isDark ? AppColors.slate500 : AppColors.slate400,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                    const SizedBox(height: 16),
+                  ],
+
                   const SizedBox(height: 32),
                 ],
               ),
@@ -1079,6 +1215,7 @@ class _DetailSheetState extends State<DetailSheet> {
 
 // Ext helper for missing colors in slate palette
 extension AppColorsHelper3 on AppColors {
+  static Color slate150() => const Color(0xFFE2E8F0);
   static Color slate450() => const Color(0xFF94A3B8);
   static Color slate550() => const Color(0xFF64748B);
 }

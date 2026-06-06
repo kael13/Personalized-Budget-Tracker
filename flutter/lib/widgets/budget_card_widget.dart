@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/budget_models.dart';
 import '../theme/app_colors.dart';
+import 'log_expense_sheet.dart';
 
 class BudgetCardWidget extends StatelessWidget {
   final BudgetAllocation allocation;
@@ -30,6 +31,8 @@ class BudgetCardWidget extends StatelessWidget {
         ? (totalAllocated / allocation.totalBudget)
         : 0.0;
     final int progressPercent = (progress * 100).round();
+    final double totalSpent = allocation.categories
+        .fold(0.0, (sum, cat) => sum + cat.spentAmount);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -192,9 +195,60 @@ class BudgetCardWidget extends StatelessWidget {
                                           size: 12,
                                           color: Colors.redAccent,
                                         ),
+),
+                            ),
+                            if (totalSpent > 0) ...[
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'SPENT ${allocation.currency} ${totalSpent.toStringAsFixed(0)}',
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w900,
+                                      color: totalSpent > totalAllocated
+                                          ? Colors.redAccent
+                                          : (isDark ? AppColors.slate500 : AppColors.slate400),
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () {
+                                      showModalBottomSheet(
+                                        context: context,
+                                        isScrollControlled: true,
+                                        backgroundColor: Colors.transparent,
+                                        builder: (_) => LogExpenseSheet(preSelectedBudget: allocation),
+                                      );
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.pastelPink.withValues(alpha: isDark ? 0.15 : 0.2),
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.add_rounded, size: 12, color: AppColors.pastelPinkDark),
+                                          const SizedBox(width: 2),
+                                          Text(
+                                            'LOG',
+                                            style: GoogleFonts.outfit(
+                                              fontSize: 8,
+                                              fontWeight: FontWeight.w900,
+                                              color: AppColors.pastelPinkDark,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
-                                  ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
                                 ],
                               ),
                             ],

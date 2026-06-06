@@ -8,6 +8,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../providers/app_state.dart';
 import '../models/budget_models.dart';
 import '../widgets/budget_card_widget.dart';
+import '../widgets/gelo_splash_animation.dart';
+import '../widgets/dream_fund_section.dart';
 import '../dialogs/budget_modal.dart';
 import '../dialogs/detail_sheet.dart';
 import '../dialogs/pin_lock_dialog.dart';
@@ -26,6 +28,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String _searchQuery = '';
   String _sortBy = 'date'; // 'date' or 'amount'
+  bool _showGeloAnimation = true;
+  String _previousTab = 'dashboard';
 
   void _openBudgetModal(BuildContext context, {BudgetAllocation? initialData}) {
     final appState = Provider.of<AppState>(context, listen: false);
@@ -130,6 +134,15 @@ class _HomeScreenState extends State<HomeScreen> {
     final appState = Provider.of<AppState>(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // Trigger gelo animation on every dashboard tab activation
+    final currentTab = appState.activeTab;
+    if (currentTab == 'dashboard' && _previousTab != 'dashboard') {
+      _showGeloAnimation = true;
+    } else if (currentTab != 'dashboard') {
+      _showGeloAnimation = false;
+    }
+    _previousTab = currentTab;
+
     // Filter and Sort budgets
     final filteredBudgets = appState.budgets.where((b) {
       return b.name.toLowerCase().contains(_searchQuery.toLowerCase());
@@ -160,17 +173,29 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            // Custom Royal App Bar
-            _buildAppBar(context, appState, isDark),
+            Column(
+              children: [
+                // Custom Royal App Bar
+                _buildAppBar(context, appState, isDark),
 
-            // Main display body
-            Expanded(child: bodyWidget),
+                // Main display body
+                Expanded(child: bodyWidget),
 
-            // Bulk edit action bar overlay if edit mode is active
-            if (appState.isEditMode && appState.activeTab == 'dashboard')
-              _buildBulkActionBar(context, appState, isDark),
+                // Bulk edit action bar overlay if edit mode is active
+                if (appState.isEditMode && appState.activeTab == 'dashboard')
+                  _buildBulkActionBar(context, appState, isDark),
+              ],
+            ),
+
+            // Floating gelo splash animation overlay
+            if (_showGeloAnimation && appState.activeTab == 'dashboard')
+              GeloSplashAnimation(
+                onComplete: () {
+                  if (mounted) setState(() => _showGeloAnimation = false);
+                },
+              ),
           ],
         ),
       ),
@@ -581,6 +606,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.1),
         ),
+
+        // Dream Fund Section
+        const DreamFundSection(),
+        const SizedBox(height: 8),
 
         // Search Bar & Sort controls
         Padding(
